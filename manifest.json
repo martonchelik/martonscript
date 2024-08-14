@@ -16,12 +16,12 @@
   "host_permissions": ["https://admin.crimson./*.prd.maxbit.private/admin/payments//*", "file:///F:/work/igaming/*"],
   "content_scripts": [
     {
-      "matches": ["*://*.prd.maxbit.private/admin/payments/*", "file:///F:/work/igaming/*"],
+      "matches": ["*://*.prd.maxbit.private/admin/payments/*", "file:///F:/work/igaming/etc/*"],
       "js": ["autofee.js"],
       "run_at": "document_end"
     },
     {
-      "matches": ["*://*.prd.maxbit.private/admin/bets/*", "file:///F:/work/igaming/*"],
+      "matches": ["*://*.prd.maxbit.private/admin/bets/*", "file:///F:/work/igaming/bets/*"],
       "js": ["coefficient.js"],
       "run_at": "document_end"
     }
