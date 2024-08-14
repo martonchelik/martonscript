@@ -1,29 +1,48 @@
 document.addEventListener('readystatechange', () => {
     if (document.readyState === 'complete') {
-        chrome.runtime.sendMessage({ message: "CSL" });
 
-        let tickSet
         let warningSet
+        let tickSet
 
-        let tickSetsy = chrome.storage.local.get('tickSet').then(onOk)
-
-        function onOk(item){
-            console.log(item);
+        function applyCheckboxStates(states) {
+            console.log('Applying checkbox states:', states);
+            tickSet = states.tickSet
+            warningSet = states.warningSet
         }
-
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            switch (request.message ) {
-                case "tickSet":
-                    console.log('Received tickSet states:', request.checked);
-                    tickSet = request.checked
-                    break;
-                case "warningSet":
-                    console.log('Received warningSet states:', request.checked);
-                    warningSet = request.checked
-                    break;
+        console.log(tickSet, warningSet)
+        chrome.storage.onChanged.addListener((changes, areaName) => {
+            if (areaName === 'local' && changes.checkboxStates) {
+                applyCheckboxStates(changes.checkboxStates.newValue);
+                location.reload();
             }
         });
 
+        chrome.storage.local.get('checkboxStates', (result) => {
+            if (result.checkboxStates) {
+                applyCheckboxStates(result.checkboxStates);
+                console.log(tickSet, warningSet)
+                const checkbox = document.getElementById('payment_fees');
+                switch (isOk) {
+                    case 1:
+                        if (checkbox && tickSet) {
+                            checkbox.checked = true;
+                            console.log("checked");
+                        };
+                        break;
+                    case -1:
+                        if (bitcoinColumn){
+                            noFeeHover();
+                            console.log("no fee");
+                        }
+                        break;
+                    case 0:
+                        console.log("played");
+                        break;
+                    default:
+                        console.log("smth vent wrong");
+                }
+            }
+        })
         const bitcoinColumn = document.getElementsByClassName('bitcoin-column')[0] === undefined ? null : document.getElementsByClassName('bitcoin-column')[0];
 
         const payPanel = document.getElementsByClassName('panel')[2].getElementsByClassName('panel_contents')[0];
@@ -34,23 +53,16 @@ document.addEventListener('readystatechange', () => {
 
         const wagerPlayedMain = document.getElementsByClassName("row-deposit_turnover")[0].getElementsByTagName("span")[0];
 
-        let feeAgreement = null
-        if (document.getElementsByClassName("row-cashout_fee_agreement")[0]) {
-            feeAgreement = 1
-        }
+        const feeAgreement = document.getElementsByClassName("row-cashout_fee_agreement")[0] ? 1 : null
 
         let isOk = -10;
         if (!wagerPlayedSide.classList.contains('green')&&wagerPlayedMain.classList.contains("red")&&feeAgreement != null){
             isOk = 1
-
         }else if(!wagerPlayedSide.classList.contains('green')&&wagerPlayedMain.classList.contains("red")&&feeAgreement == null) {
             isOk = -1
         }else isOk = 0
 
-        const checkbox = document.getElementById('payment_fees');
-
         function noFeeHover(){
-
             bitcoinColumn ? bitcoinColumn.style.display = 'none' : console.log("панель выплаты отсутствует")
             payPanel.innerHTML +=
                 `<div id="noFees"><h2 class="text-attention">Отсутсвует соглашение на комиссию, продолжить?</h2><button id="noFeesConfirm" type="submit">ДА</buttonid></div>`;
@@ -63,25 +75,8 @@ document.addEventListener('readystatechange', () => {
             })
         }
 
-        switch (isOk) {
+        async function setCheck(){
 
-            case 1:
-                if (checkbox) {
-                    checkbox.checked = true;
-                    console.log("checked");
-                };
-                break;
-            case -1:
-                if (bitcoinColumn){
-                    noFeeHover();
-                    console.log("no fee");
-                }
-                break;
-            case 0:
-                console.log("played");
-                break;
-            default:
-                console.log("smth vent wrong");
         }
     }
 });

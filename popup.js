@@ -1,49 +1,34 @@
-const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+document.addEventListener('DOMContentLoaded', () => {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
 
-function saveCheckboxStates() {
-    checkboxes.forEach((checkbox) => {
-        localStorage.setItem(checkbox.id, checkbox.checked);
-        chrome.runtime.sendMessage({ message: checkbox.id, checked: checkbox.checked })
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, { message: checkbox.id, checked: checkbox.checked });
+    // Function to save checkbox states
+    function saveCheckboxStates() {
+        const checkboxStates = {};
+
+        checkboxes.forEach((checkbox) => {
+            checkboxStates[checkbox.id] = checkbox.checked;
         });
-        switch (checkbox.id) {
-            case 'tickSet':
-                chrome.storage.local.set({[checkbox.id]: checkbox.checked}).then(onOk,onErr);
-                break;
-            case 'warningSet':
-                chrome.storage.local.set({'warningSet': checkbox.checked}).then(onOk,onErr);
-                break;
-        }
-    });
-}
 
-function onOk(item){
-    console.log(item);
-}
-function onErr(err){
-    console.log(err)
-}
+        // Save the checkbox states to chrome.storage.local
+        chrome.storage.local.set({ checkboxStates }, () => {
+            console.log('Checkbox states saved:', checkboxStates);
+        });
+    }
 
-    chrome.runtime.onStartup.addListener(function () {
-        chrome.runtime.sendMessage({ message: checkbox.id, checked: checkbox.checked })
-    })
-
-function loadCheckboxStates() {
+    // Add event listeners to each checkbox
     checkboxes.forEach((checkbox) => {
-        const savedState = localStorage.getItem(checkbox.id);
-        console.log(checkbox.id)
-        if (savedState !== null) {
-            checkbox.checked = savedState === 'true';
+        checkbox.addEventListener('change', saveCheckboxStates);
+    });
+
+    // Initial load: get the current checkbox states from chrome.storage.local
+    chrome.storage.local.get('checkboxStates', (result) => {
+        if (result.checkboxStates) {
+            Object.keys(result.checkboxStates).forEach((id) => {
+                const checkbox = document.getElementById(id);
+                if (checkbox) {
+                    checkbox.checked = result.checkboxStates[id];
+                }
+            });
         }
     });
-}
-
-
-checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener('change', saveCheckboxStates);
 });
-
-document.addEventListener('DOMContentLoaded', loadCheckboxStates);
-
-

@@ -17,7 +17,12 @@
   "content_scripts": [
     {
       "matches": ["*://*.prd.maxbit.private/admin/payments/*", "file:///F:/work/igaming/*"],
-      "js": ["content.js"],
+      "js": ["autofee.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://*.prd.maxbit.private/admin/bets/*", "file:///F:/work/igaming/*"],
+      "js": ["coefficient.js"],
       "run_at": "document_end"
     }
   ],
