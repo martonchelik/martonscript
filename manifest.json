@@ -11,7 +11,8 @@
   "permissions": [
     "activeTab",
     "declarativeContent",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": ["https://admin.crimson./*.prd.maxbit.private/admin/payments//*", "file:///F:/work/igaming/*"],
   "content_scripts": [
@@ -23,6 +24,11 @@
     {
       "matches": ["*://*.prd.maxbit.private/admin/bets/*", "file:///F:/work/igaming/bets/*"],
       "js": ["coefficient.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://*.prd.maxbit.private/*", "file:///F:/work/igaming/*"],
+      "js": ["blacktheme.js"],
       "run_at": "document_end"
     }
   ],

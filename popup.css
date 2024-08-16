@@ -14,6 +14,48 @@ body{
     align-items: center;
 }
 
+#alias{
+    display: block;
+}
+
+.nvslideout{
+    display: none !important;
+}
+
+.spoiler input, .spoiler .textInput, .spoiler textarea{
+    display: none;
+}
+.spoiler label::before {
+    content: '▶';
+
+}
+.spoiler :checked + label::before { content: '▼'; }
+.spoiler :checked ~ input {
+    display: block;
+}
+.spoiler :checked ~ .textInput {
+    display: block;
+}
+
+.spoiler :checked ~ textarea {
+    display: block;
+}
+
+.textInput textarea{
+    width: 305px;
+    height: 60px;
+    border-radius: 3px;
+    resize: none;
+}
+.textInput{
+    padding-left: 10px;
+    width: 300px;
+}
+
+.textInput.headCentered{
+    padding-bottom: 10px;
+}
+
 .setLine span{
     width: 95%;
 }
@@ -69,4 +111,25 @@ input:checked + .slider:before {
     -webkit-transform: translateX(13px);
     -ms-transform: translateX(13px);
     transform: translateX(13px);
+}
+
+@keyframes appear {
+    from{
+        display: none;
+        opacity: 0;
+    }
+    to{
+        display: block;
+        opacity: 1;
+    }
+}
+@keyframes disappear {
+    from{
+        display: block;
+        opacity: 1;
+    }
+    to{
+        display: none;
+        opacity: 0;
+    }
 }

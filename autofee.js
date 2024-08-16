@@ -3,25 +3,24 @@ document.addEventListener('readystatechange', () => {
 
         let warningSet
         let tickSet
+        let cancelSet
 
         function applyCheckboxStates(states) {
-            console.log('Applying checkbox states:', states);
             tickSet = states.tickSet
             warningSet = states.warningSet
+            cancelSet = states.cancelSet
         }
-        console.log(tickSet, warningSet)
-        chrome.storage.onChanged.addListener((changes, areaName) => {
-            if (areaName === 'local' && changes.checkboxStates) {
-                applyCheckboxStates(changes.checkboxStates.newValue);
-                location.reload();
-            }
-        });
+            chrome.storage.onChanged.addListener((changes, areaName) => {
+                if (areaName === 'local' && changes.checkboxStates) {
+                    location.reload();
+                }
+            });
 
         chrome.storage.local.get('checkboxStates', (result) => {
             if (result.checkboxStates) {
                 applyCheckboxStates(result.checkboxStates);
-                console.log(tickSet, warningSet)
                 const checkbox = document.getElementById('payment_fees');
+                const cancelNotWagered = document.getElementById('payment_deposit_not_wagered')
                 switch (isOk) {
                     case 1:
                         if (checkbox && tickSet) {
@@ -30,9 +29,18 @@ document.addEventListener('readystatechange', () => {
                         };
                         break;
                     case -1:
-                        if (bitcoinColumn){
+                        if (bitcoinColumn && warningSet){
                             noFeeHover();
                             console.log("no fee");
+                        }else{
+                            noFeeNoBlock();
+                            console.log(bitcoinColumn);
+                            console.log(warningSet);
+
+                        }
+                        if(cancelSet && cancelNotWagered){
+                            cancelNotWagered.checked = true;
+                            console.log("canceled");
                         }
                         break;
                     case 0:
@@ -71,12 +79,11 @@ document.addEventListener('readystatechange', () => {
             noFeesConfirm.addEventListener("click", () => {
                 document.getElementsByClassName('bitcoin-column')[0].style.removeProperty('display');
                 noFees.remove();
-                console.log(bitcoinColumn.style.display, getComputedStyle(bitcoinColumn).display)
             })
         }
-
-        async function setCheck(){
-
+        function noFeeNoBlock() {
+            document.getElementsByClassName('dangerzone panel')[0].getElementsByClassName('panel_contents')[0].innerHTML +=
+                `<div id="noFees"><h2 class="text-attention">Отсутсвует соглашение на комиссию, продолжить?</h2>`;
         }
     }
 });

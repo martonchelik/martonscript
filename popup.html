@@ -21,6 +21,48 @@
         <span class="slider round"></span>
     </label>
 </div>
+<div class="setLine">
+    <span>Автоматическая галочка на 'отыгран депозит'</span>
+    <label class="switch">
+        <input type="checkbox" id="cancelSet">
+        <span class="slider round"></span>
+    </label>
+</div>
+<div class="setLine">
+    <span>Коэфициенты ставок</span>
+    <label class="switch">
+        <input type="checkbox" id="coefficientSet">
+        <span class="slider round"></span>
+    </label>
+</div>
+<div class="setLine spoiler" id="alias">
+    <input type="checkbox" id="addGames">
+    <label class="aliasLabel" for="addGames">Добавить игры:</label>
+    <div class="textInput">
+        <div class="spoiler">
+            <input type="checkbox" id="rouletteLabel">
+            <label class="aliasLabel" for="rouletteLabel">Рулетка</label>
+            <textarea id='roulette_custom'></textarea>
+        </div>
+        <div class="spoiler">
+            <input type="checkbox" id="instantLabel">
+            <label class="aliasLabel" for="instantLabel">Instant Games</label>
+            <textarea id='instant_custom'></textarea>
+        </div>
+        <div class="spoiler">
+            <input type="checkbox" id="baccaratLabel">
+            <label class="aliasLabel" for="baccaratLabel">Baccarat</label>
+            <textarea id='baccarat_custom'></textarea>
+        </div>
+    </div>
+</div>
+<div class="setLine">
+    <span>Тёмная тема</span>
+    <label class="switch">
+        <input type="checkbox" id="themeSet">
+        <span class="slider round"></span>
+    </label>
+</div>
     <script src="popup.js"></script>
 </body>
 </html>
