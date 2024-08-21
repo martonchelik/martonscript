@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
         }
     }
+
     function saveCheckboxStates() {
         const checkboxStates = {};
         checkboxes.forEach((checkbox) => {
@@ -67,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     checkbox.checked = result.checkboxStates[id];
                 }
             });
-            console.log('load')
             showAlias()
         }
     })

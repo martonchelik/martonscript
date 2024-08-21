@@ -1,14 +1,34 @@
+function waitForElement(selector, callback) {
+    const observer = new MutationObserver((mutations, obs) => {
+        const element = document.getElementById(selector);
+        if (element) {
+            obs.disconnect();
+            callback(element);
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+
+
 document.addEventListener('readystatechange', () => {
     if (document.readyState === 'complete') {
 
         let warningSet
         let tickSet
         let cancelSet
+        let obvTicksSet
 
         function applyCheckboxStates(states) {
             tickSet = states.tickSet
             warningSet = states.warningSet
             cancelSet = states.cancelSet
+            obvTicksSet = states.obvTicksSet
+            
+            console.log(cancelSet)
         }
             chrome.storage.onChanged.addListener((changes, areaName) => {
                 if (areaName === 'local' && changes.checkboxStates) {
@@ -20,7 +40,6 @@ document.addEventListener('readystatechange', () => {
             if (result.checkboxStates) {
                 applyCheckboxStates(result.checkboxStates);
                 const checkbox = document.getElementById('payment_fees');
-                const cancelNotWagered = document.getElementById('payment_deposit_not_wagered')
                 switch (isOk) {
                     case 1:
                         if (checkbox && tickSet) {
@@ -38,10 +57,6 @@ document.addEventListener('readystatechange', () => {
                             console.log(warningSet);
 
                         }
-                        if(cancelSet && cancelNotWagered){
-                            cancelNotWagered.checked = true;
-                            console.log("canceled");
-                        }
                         break;
                     case 0:
                         console.log("played");
@@ -49,6 +64,18 @@ document.addEventListener('readystatechange', () => {
                     default:
                         console.log("smth vent wrong");
                 }
+                waitForElement('payment_deposit_not_wagered', (element) => {
+                    if(cancelSet && (isOk == 1 || isOk == -1)){
+                        element.click();
+                        console.log("canceled");
+                    }
+                });
+                waitForElement('payment_without_reason', (element) => {
+                    if(obvTicksSet && element.checked){
+                        document.getElementById('payment_send_to_email').click()
+                        document.getElementById('payment_send_to_messenger').click()
+                    }
+                });
             }
         })
         const bitcoinColumn = document.getElementsByClassName('bitcoin-column')[0] === undefined ? null : document.getElementsByClassName('bitcoin-column')[0];

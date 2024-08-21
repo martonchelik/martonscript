@@ -1,0 +1,27 @@
+.autocomplete-items {
+  position: absolute;
+  z-index: 99;
+  overflow-y: auto;
+  height: 100px;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.autocomplete-items input{
+  height: 38px;
+  width: 200px;
+}
+
+.autocomplete-items div:hover {
+  background-color: #64acfc;
+}
+
+.autocomplete-active {
+  background-color: #0075ff !important;
+  color: #ffffff;
+}

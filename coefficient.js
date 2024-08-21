@@ -14,7 +14,6 @@ document.addEventListener('readystatechange', () => {
             const instant_custom = result.instant_custom;
             const baccarat_custom = result.baccarat_custom;
             const coefficientSet = result.checkboxStates.coefficientSet
-            console.log('Values loaded');
             if (coefficientSet){
                 checkCoefs(roulette_custom, instant_custom, baccarat_custom)
             }
@@ -40,44 +39,31 @@ document.addEventListener('readystatechange', () => {
         });
 
         function checkGame(gameName){
-
-            switch (gameName.toLowerCase()) {
-                case 'aviator':
-                case 'jetx':
-                    return 'instant';
-                    break;
-                case 'immersive roulette':
-                case 'lightning roulette':
-                case 'xxxtreme lightning roulette':
-                case 'auto-roulette':
+            switch (true) {
+                case roulette.includes(gameName.toLowerCase()):
                     return 'roulette';
                     break;
-                case 'live no commission baccarat':
-                case 'baccarat a':
-                case 'speed baccarat d':
+                case instant.includes(gameName.toLowerCase()):
+                    return 'instant';
+                    break;
+                case baccarat.includes(gameName.toLowerCase()):
                     return 'baccarat';
                     break;
                 default:
-                    switch (true) {
-                        case roulette.includes(gameName.toLowerCase()):
-                            return 'roulette';
-                            break;
-                        case instant.includes(gameName.toLowerCase()):
-                            return 'instant';
-                            break;
-                        case baccarat.includes(gameName.toLowerCase()):
-                            return 'baccarat';
-                            break;
-                    }
-                    break;
+                    return 'Something else'
             }
+        }
+
+        function filter(input) {
+            return input.replace(/[^\d.]/g, '');
         }
         for (let i = 0; i < rows.length; i++) {
             const newDataCell = document.createElement('td');
-            const SS = parseFloat(rows[i].childNodes[13].textContent.replace(/,/, '.'));
-            const SV = parseFloat(rows[i].childNodes[15].textContent.replace(/,/, '.'));
-            const BB = parseFloat(rows[i].childNodes[9].textContent.replace(/,/, '.'));
-            const coefficient = (SV/SS).toFixed(2)
+            const SS = parseFloat(filter(rows[i].childNodes[13].textContent.replace(/,/, '.')));
+            const SV = parseFloat(filter(rows[i].childNodes[15].textContent.replace(/,/, '.')));
+            const BB = parseFloat(filter(rows[i].childNodes[9].textContent.replace(/,/, '.')))
+
+            const coefficient = SS !=0 ? (SV/SS).toFixed(2) : 0;
             const BBSS = (BB/SS).toFixed(2)
             const coefficientSpan = document.createElement('span');
             coefficientSpan.className = 'status_tag';
@@ -86,7 +72,7 @@ document.addEventListener('readystatechange', () => {
             coefficientSpan.textContent = coefficient;
             switch (checkGame(rows[i].childNodes[3].textContent)) {
                 case 'instant':
-                    if (coefficient <= 1.4){
+                    if (coefficient <= 1.4 && coefficient >= 1){
                         coefficientSpan.classList.add('red');
                     } else {
                         coefficientSpan.classList.add('green');
@@ -95,14 +81,14 @@ document.addEventListener('readystatechange', () => {
                 case 'roulette':
                     if (coefficient == 2 || coefficient == 3){
                         coefficientSpan.classList.add('red');
-                    } else if (coefficient <= 1.3 || BBSS <= 1.1){
+                    } else if ((coefficient <= 1.3 && coefficient >= 1) || BBSS <= 1.1){
                         coefficientSpan.classList.add('warn');
                     }else{
                         coefficientSpan.classList.add('green');
                     }
                     break;
                 case 'baccarat':
-                    if (coefficient == 0 || BBSS <= 1.2){
+                    if (coefficient == 1 || BBSS <= 1.2){
                         coefficientSpan.classList.add('warn');
                     }else{
                         coefficientSpan.classList.add('green');
