@@ -26,6 +26,12 @@
       "run_at": "document_end"
     },
     {
+      "matches": ["*://*.prd.maxbit.private/admin/players/*", "file:///F:/work/igaming/etc/*"],
+      "js": ["documents.js"],
+      "css": ["documents.css"],
+      "run_at": "document_end"
+    },
+    {
       "matches": ["*://*.prd.maxbit.private/admin/bets*", "file:///F:/work/igaming/bets/*"],
       "js": ["coefficient.js"],
       "run_at": "document_end"

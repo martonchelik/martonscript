@@ -3,8 +3,23 @@ function waitForElement(selector, callback) {
         const element = document.getElementById(selector);
         if (element) {
             callback(element);
-            obs.disconnect();
         }
+        function stopObserving() {
+            obs.disconnect();
+            console.log('disconnected')
+        }
+
+        function startObserving() {
+            obs.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.addEventListener('focus', stopObserving);
+            textarea.addEventListener('focusout', startObserving);
+        });
     });
 
     observer.observe(document.body, {
@@ -12,21 +27,7 @@ function waitForElement(selector, callback) {
         subtree: true
     });
 
-    function stopObserving() {
-        observer.disconnect();
-    }
 
-    function startObserving() {
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
-
-    document.querySelectorAll('textarea').forEach(textarea => {
-        textarea.addEventListener('focus', stopObserving);
-        textarea.addEventListener('focusout', startObserving);
-    });
 
     observer.observe(document.body, {
         childList: true,
@@ -292,7 +293,7 @@ function setupAutocomplete() {
         "det er nødvendig å laste ned baksiden av dokumentet", "", "", "",
         "", ""];
 
-    const cancels = ["На карту", "На МК", "Переоформить корректнох", "Обратная сторона id", "На карту или банковским переводом",
+    const cancels = ["На карту", "На МК", "Переоформить корректно", "Обратная сторона id", "На карту или банковским переводом",
         "Документ с CPF", "На мифинити", "Дубликат", "По номеру телефона из профиля, почте или CPF", "На другую иконку", "Завершить бонусную ставку в игре",
         "На номер из профиля или скрин из ЛК", "Пластик", "Выписка по карте", "На карту или на другую иконку "];
 

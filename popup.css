@@ -113,6 +113,51 @@ input:checked + .slider:before {
     transform: translateX(13px);
 }
 
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+.tooltip i{
+    color: #64acfc;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 220px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    margin-left: -170px;
+    top: 100%;
+    left: 50%;
+}
+
+.tooltip .tooltiptextright {
+    visibility: hidden;
+    width: 220px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    margin-left: -40px;
+    top: 100%;
+    left: 50%;
+}
+
+.tooltip:hover .tooltiptextright {
+    visibility: visible;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
 @keyframes appear {
     from{
         display: none;

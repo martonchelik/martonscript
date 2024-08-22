@@ -4,55 +4,118 @@
     <meta charset="UTF-8">
     <title>Settings</title>
     <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
 <h2>Настройки</h2>
 <div class="setLine">
-    <span>Автоматическая галочка на комиссии</span>
+    <span>
+        Автоматическая галочка на комиссии
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext">Автоматически ставит галочку на комиссии, если не отыгран депозит и в основной информации о выплате, и сбоку, а так же если есть согласие на комиссию и игрок не лудоман. Если согласия нет -
+                в строке "Внимание" пишет об этом</span>
+        </div>
+    </span>
+
     <label class="switch">
     <input type="checkbox" id="tickSet">
     <span class="slider round"></span>
     </label>
 </div>
 <div class="setLine">
-    <span>Автоматическая галочка на email и мессенджер</span>
+    <span>
+        Автоматическая галочка на email и мессенджер
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext">Автоматически ставит галочки на "Отправить по Емейл" и "Отправить в мессенджер" в окне отмены платежа если выбран вариант "Без обоснования"</span>
+        </div>
+    </span>
     <label class="switch">
         <input type="checkbox" id="obvTicksSet">
         <span class="slider round"></span>
     </label>
 </div>
 <div class="setLine">
-    <span>Окно с предупреждением об отсутсвии согласия на комиссию</span>
+    <span>
+        Окно с предупреждением об отсутсвии согласия на комиссию
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptextright">Если нет согласия на комиссию и не отыгран депозит - перед выводом сначала будет окошко с предупреждением об этом, а потом возможность ввести код и провести выплату</span>
+        </div>
+    </span>
     <label class="switch">
         <input type="checkbox" id="warningSet">
         <span class="slider round"></span>
     </label>
 </div>
 <div class="setLine">
-    <span>Автоматическая галочка на 'отыгран депозит'</span>
+    <span>
+        Автоматическая галочка на 'не отыгран депозит'
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext">Если вы отменяете выплату, в которой не отыгран депозит, автоматически выбирает вариант "не отыгран депозит" в окне отмены</span>
+        </div>
+    </span>
     <label class="switch">
         <input type="checkbox" id="cancelSet">
         <span class="slider round"></span>
     </label>
 </div>
 <div class="setLine">
-    <span>Шаблоны для отмен, коментариев и отклонения документов</span>
+    <span>
+        Шаблоны для отмен, коментариев и отклонения документов
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptextright">При отмене, комментировании или отклонении документов при нажатии на текстовое поле будет открываться список шаблонов с возможностью выбора.
+                Двигаться по спику можно как при помощи мыши, так и при помощи клавиатуры(движение вверх/вниз на стрелочках и выбор шаблона клавишей enter)
+            </span>
+        </div>
+    </span>
     <label class="switch">
         <input type="checkbox" id="clipboardSet">
         <span class="slider round"></span>
     </label>
 </div>
-
 <div class="setLine">
-    <span>Коэфициенты ставок</span>
+    <span>
+        Скрипт для документов
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptextright">Старый добрый скрипт для документов, но пока не в полном объёме(вроде)</span>
+        </div>
+    </span>
+    <label class="switch">
+        <input type="checkbox" id="documentsSet">
+        <span class="slider round"></span>
+    </label>
+</div>
+<div class="setLine">
+    <span>
+        Коэфициенты ставок
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptextright">Добавляет коэффициенты на страницы со ставками в казино. Отмечает красным: рулетку х2, х3, инстант от х1 до х1.4, любые ставки х1000.
+                Жёлтым: ставки на весь (+-10%) баланс в руллетке, ставки от х1 до х1.3 в рулетке, ставки на весь (+-20%) баланс в баккарате, ставки х1 в баккарате.
+                База игр неполная, её можно дополнить нажав на "Добавить игры" ниже
+            </span>
+        </div>
+    </span>
     <label class="switch">
         <input type="checkbox" id="coefficientSet">
         <span class="slider round"></span>
     </label>
 </div>
+
 <div class="setLine spoiler" id="alias">
     <input type="checkbox" id="addGames">
-    <label class="aliasLabel" for="addGames">Добавить игры:</label>
+    <label class="aliasLabel" for="addGames">Добавить игры:
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptextright">Позволяет дополнить список игр, учитываемых при окраске коэфициентов. Писать через запятую любым регистром в поля ниже.
+            </span>
+        </div>
+    </label>
     <div class="textInput">
         <div class="spoiler">
             <input type="checkbox" id="rouletteLabel">

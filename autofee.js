@@ -40,29 +40,32 @@ document.addEventListener('readystatechange', () => {
             if (result.checkboxStates) {
                 applyCheckboxStates(result.checkboxStates);
                 const checkbox = document.getElementById('payment_fees');
-                switch (isOk) {
-                    case 1:
-                        if (checkbox && tickSet) {
-                            checkbox.checked = true;
-                            console.log("checked");
-                        };
-                        break;
-                    case -1:
-                        if (bitcoinColumn && warningSet){
-                            noFeeHover();
-                            console.log("no fee");
-                        }else{
-                            noFeeNoBlock();
-                            console.log(bitcoinColumn);
-                            console.log(warningSet);
+                if (!document.getElementsByClassName('payment-player-tags')[0].getElementsByClassName("player-tag-gambling_addict")[0]) {
+                    switch (isOk) {
+                        case 1:
+                            if (checkbox && tickSet) {
+                                checkbox.checked = true;
+                                console.log("checked");
+                            }
+                            ;
+                            break;
+                        case -1:
+                            if (bitcoinColumn && warningSet) {
+                                noFeeHover();
+                                console.log("no fee");
+                            } else {
+                                noFeeNoBlock();
+                                console.log(bitcoinColumn);
+                                console.log(warningSet);
 
-                        }
-                        break;
-                    case 0:
-                        console.log("played");
-                        break;
-                    default:
-                        console.log("smth vent wrong");
+                            }
+                            break;
+                        case 0:
+                            console.log("played");
+                            break;
+                        default:
+                            console.log("smth vent wrong");
+                    }
                 }
                 waitForElement('payment_deposit_not_wagered', (element) => {
                     if(cancelSet && (isOk == 1 || isOk == -1)){
@@ -72,8 +75,8 @@ document.addEventListener('readystatechange', () => {
                 });
                 waitForElement('payment_without_reason', (element) => {
                     if(obvTicksSet && element.checked){
-                        document.getElementById('payment_send_to_email').click()
-                        document.getElementById('payment_send_to_messenger').click()
+                        if (!document.getElementById('payment_send_to_email').checked) document.getElementById('payment_send_to_email').click()
+                        if (!document.getElementById('payment_send_to_messenger').checked) document.getElementById('payment_send_to_messenger').click()
                     }
                 });
             }
