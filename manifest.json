@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SoftSwiss back scripts",
-  "version": "2.0.0",
+  "version": "2.5.07",
   "description": "Большой набор скриптов для бэка",
   "background": {
     "service_worker":
@@ -12,27 +12,31 @@
     "activeTab",
     "storage"
   ],
-  "host_permissions": ["*://*.prd.maxbit.private/*", "file:///F:/work/igaming/*"],
+  "host_permissions": ["*://*.prd.maxbit.private/*"],
   "content_scripts": [
     {
-      "matches": ["*://*.prd.maxbit.private/admin/payments/*", "file:///F:/work/igaming/etc/*"],
+      "matches": ["*://*.prd.maxbit.private/admin/payments/*"],
       "js": ["autofee.js"],
       "run_at": "document_end"
     },
     {
-      "matches": ["*://*.prd.maxbit.private/*", "file:///F:/work/igaming/etc/*"],
+      "matches": ["*://*.prd.maxbit.private/*"],
       "js": ["clipboard.js"],
       "css": ["styles.css"],
       "run_at": "document_end"
     },
     {
-      "matches": ["*://*.prd.maxbit.private/admin/players/*", "file:///F:/work/igaming/etc/*"],
+      "matches": ["*://*.prd.maxbit.private/admin/players/*"],
       "js": ["documents.js"],
       "css": ["documents.css"],
       "run_at": "document_end"
     },
     {
-      "matches": ["*://*.prd.maxbit.private/admin/bets*", "file:///F:/work/igaming/bets/*"],
+      "matches": ["*://*.prd.maxbit.private/admin/players/*"],
+      "js": ["duplicate checker.js"]
+    },
+    {
+      "matches": ["*://*.prd.maxbit.private/admin/bets*"],
       "js": ["coefficient.js"],
       "run_at": "document_end"
     }

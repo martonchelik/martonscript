@@ -7,23 +7,136 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
-<h2>Настройки</h2>
-<div class="setLine">
+<div id="addGames" class="hidden">
+    <h3>
+        Добавить игры:
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext right">Позволяет дополнить список игр, учитываемых при окраске коэфициентов. Писать через запятую любым регистром в поля ниже.
+            </span>
+        </div>
+        <button class= "close-button" id="closeAddGamesMenu">X</button>
+    </h3>
+    <div class="textInput">
+        <label class="aliasLabel" for="roulette_custom">Рулетка</label>
+        <textarea id='roulette_custom'></textarea>
+        <label class="aliasLabel" for="instant_custom">Instant Games</label>
+        <textarea id='instant_custom'></textarea>
+        <label class="aliasLabel" for="baccarat_custom">Baccarat</label>
+        <textarea id='baccarat_custom'></textarea>
+    </div>
+</div>
+
+
+
+<div id="profile" class="hidden">
+    <h3>
+        Настройки профиля
+        <button class= "close-button" id="closeProfileMenu">X</button>
+    </h3>
+    <div class="setLine">
+    <span>
+        Панель дубликатов(бета)
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext right">Панель с дубликатами сверху. Если не заблочен или нет коммента - отмечается красным, в остальных случаях зеленым</span>
+        </div>
+    </span>
+        <label class="switch">
+            <input type="checkbox" id="duplicateCheckerSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+    <span>
+        Помечать если запрещена страна
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext">Оставляет пометки в шапке страницы. "Запрещенный вход", если были действия из запрещенного региона, "запрещенный регион", если номер телефона запрещенной страны</span>
+        </div>
+    </span>
+        <label class="switch">
+            <input type="checkbox" id="forbiddenCountriesSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+    <span>
+        Шаблоны для отмен, коментариев и отклонения документов
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext right">При отмене, комментировании или отклонении документов при нажатии на текстовое поле будет открываться список шаблонов с возможностью выбора.
+                Двигаться по спику можно как при помощи мыши, так и при помощи клавиатуры(движение вверх/вниз на стрелочках и выбор шаблона клавишей enter)
+            </span>
+        </div>
+    </span>
+        <label class="switch">
+            <input type="checkbox" id="clipboardSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+    <span>
+        Скрипт для документов
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext right">Старый добрый скрипт для документов, но пока не в полном объёме(вроде)</span>
+        </div>
+    </span>
+        <label class="switch">
+            <input type="checkbox" id="documentsSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+    <span>
+        Дублировать выше ссылки на ставки
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext">Дублировать ссылки на ставки игрока в казино и на спорт в соотвествующих бонусах и в шапке профиля</span>
+        </div>
+    </span>
+        <label class="switch">
+            <input type="checkbox" id="betsDublicateSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+    <span>
+        Отмечать неверифицированные карты
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext">Отмечает неверифицированные карты и если по картам есть комменты</span>
+        </div>
+    </span>
+        <label class="switch">
+            <input type="checkbox" id="cardsSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+</div>
+
+
+
+<div id="payments" class="hidden">
+    <h3>
+        Настройки выплат
+        <button class= "close-button" id="closePaymentMenu">X</button>
+    </h3>
+    <div class="setLine">
     <span>
         Автоматическая галочка на комиссии
         <div class="tooltip">
             <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext">Автоматически ставит галочку на комиссии, если не отыгран депозит и в основной информации о выплате, и сбоку, а так же если есть согласие на комиссию и игрок не лудоман. Если согласия нет -
-                в строке "Внимание" пишет об этом</span>
+            <span class="tooltiptext">Автоматически ставит галочку на комиссии, если не отыгран депозит и в основной информации о выплате, и сбоку, а так же если есть согласие на комиссию и игрок не лудоман.</span>
         </div>
     </span>
-
-    <label class="switch">
-    <input type="checkbox" id="tickSet">
-    <span class="slider round"></span>
-    </label>
-</div>
-<div class="setLine">
+        <label class="switch">
+            <input type="checkbox" id="tickSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
     <span>
         Автоматическая галочка на email и мессенджер
         <div class="tooltip">
@@ -31,25 +144,38 @@
             <span class="tooltiptext">Автоматически ставит галочки на "Отправить по Емейл" и "Отправить в мессенджер" в окне отмены платежа если выбран вариант "Без обоснования"</span>
         </div>
     </span>
-    <label class="switch">
-        <input type="checkbox" id="obvTicksSet">
-        <span class="slider round"></span>
-    </label>
-</div>
-<div class="setLine">
+        <label class="switch">
+            <input type="checkbox" id="obvTicksSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
     <span>
         Окно с предупреждением об отсутсвии согласия на комиссию
         <div class="tooltip">
             <i class="fa fa-info-circle"></i>
-            <span class="tooltiptextright">Если нет согласия на комиссию и не отыгран депозит - перед выводом сначала будет окошко с предупреждением об этом, а потом возможность ввести код и провести выплату</span>
+            <span class="tooltiptext right">Если нет согласия на комиссию и не отыгран депозит - перед выводом сначала будет окошко с предупреждением об этом, а потом возможность ввести код и провести выплату</span>
         </div>
     </span>
-    <label class="switch">
-        <input type="checkbox" id="warningSet">
-        <span class="slider round"></span>
-    </label>
-</div>
-<div class="setLine">
+        <label class="switch">
+            <input type="checkbox" id="warningSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+    <span>
+        "Внимание, нет согласия на комиссию"
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext"> Если нет согласия ка комиссию и депозит не отыгран - в строке "Внимание" пишет об этом</span>
+        </div>
+    </span>
+        <label class="switch">
+            <input type="checkbox" id="notPlayedSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
     <span>
         Автоматическая галочка на 'не отыгран депозит'
         <div class="tooltip">
@@ -57,36 +183,43 @@
             <span class="tooltiptext">Если вы отменяете выплату, в которой не отыгран депозит, автоматически выбирает вариант "не отыгран депозит" в окне отмены</span>
         </div>
     </span>
-    <label class="switch">
-        <input type="checkbox" id="cancelSet">
-        <span class="slider round"></span>
-    </label>
+        <label class="switch">
+            <input type="checkbox" id="cancelSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
 </div>
+
+
+
+<h2>Настройки</h2>
 <div class="setLine">
     <span>
-        Шаблоны для отмен, коментариев и отклонения документов
+        Скрипты для выплат
         <div class="tooltip">
             <i class="fa fa-info-circle"></i>
-            <span class="tooltiptextright">При отмене, комментировании или отклонении документов при нажатии на текстовое поле будет открываться список шаблонов с возможностью выбора.
-                Двигаться по спику можно как при помощи мыши, так и при помощи клавиатуры(движение вверх/вниз на стрелочках и выбор шаблона клавишей enter)
+            <span class="tooltiptext right">Отключает все настройки для выплат(кроме шаблонов). В меню настройки можно настроить каждую функцию отдельно.
             </span>
         </div>
+        <button id="togglePaymentSettings">Настройки</button>
     </span>
     <label class="switch">
-        <input type="checkbox" id="clipboardSet">
+        <input type="checkbox" id="paymentSet">
         <span class="slider round"></span>
     </label>
 </div>
 <div class="setLine">
     <span>
-        Скрипт для документов
+        Скрипты для профиля(документов)
         <div class="tooltip">
             <i class="fa fa-info-circle"></i>
-            <span class="tooltiptextright">Старый добрый скрипт для документов, но пока не в полном объёме(вроде)</span>
+            <span class="tooltiptext top">Отключает все настройки для профиля игра. В меню настройки можно настроить каждую функцию отдельно.
+            </span>
         </div>
+        <button id="toggleProfileSettings">Настройки</button>
     </span>
     <label class="switch">
-        <input type="checkbox" id="documentsSet">
+        <input type="checkbox" id="profileSet">
         <span class="slider round"></span>
     </label>
 </div>
@@ -95,11 +228,12 @@
         Коэфициенты ставок
         <div class="tooltip">
             <i class="fa fa-info-circle"></i>
-            <span class="tooltiptextright">Добавляет коэффициенты на страницы со ставками в казино. Отмечает красным: рулетку х2, х3, инстант от х1 до х1.4, любые ставки х1000.
+            <span class="tooltiptext top">Добавляет коэффициенты на страницы со ставками в казино. Отмечает красным: рулетку х2, х3, инстант от х1 до х1.4, любые ставки х1000.
                 Жёлтым: ставки на весь (+-10%) баланс в руллетке, ставки от х1 до х1.3 в рулетке, ставки на весь (+-20%) баланс в баккарате, ставки х1 в баккарате.
                 База игр неполная, её можно дополнить нажав на "Добавить игры" ниже
             </span>
         </div>
+        <button id="toggleCoefficientSettings">Добавить игры</button>
     </span>
     <label class="switch">
         <input type="checkbox" id="coefficientSet">
@@ -107,33 +241,6 @@
     </label>
 </div>
 
-<div class="setLine spoiler" id="alias">
-    <input type="checkbox" id="addGames">
-    <label class="aliasLabel" for="addGames">Добавить игры:
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptextright">Позволяет дополнить список игр, учитываемых при окраске коэфициентов. Писать через запятую любым регистром в поля ниже.
-            </span>
-        </div>
-    </label>
-    <div class="textInput">
-        <div class="spoiler">
-            <input type="checkbox" id="rouletteLabel">
-            <label class="aliasLabel" for="rouletteLabel">Рулетка</label>
-            <textarea id='roulette_custom'></textarea>
-        </div>
-        <div class="spoiler">
-            <input type="checkbox" id="instantLabel">
-            <label class="aliasLabel" for="instantLabel">Instant Games</label>
-            <textarea id='instant_custom'></textarea>
-        </div>
-        <div class="spoiler">
-            <input type="checkbox" id="baccaratLabel">
-            <label class="aliasLabel" for="baccaratLabel">Baccarat</label>
-            <textarea id='baccarat_custom'></textarea>
-        </div>
-    </div>
-</div>
 
 <script src="popup.js"></script>
 </body>

@@ -3,6 +3,7 @@ body{
     width: 320px;
     background-color: #2b2b2b;
     color: white;
+    border-radius: 20px;
 }
 
 .setLine{
@@ -14,42 +15,48 @@ body{
     align-items: center;
 }
 
-#alias{
-    display: block;
-}
-
-.nvslideout{
-    display: none !important;
-}
-
-.spoiler input, .spoiler .textInput, .spoiler textarea{
+.hidden{
     display: none;
 }
-.spoiler label::before {
-    content: '▶';
 
-}
-.spoiler :checked + label::before { content: '▼'; }
-.spoiler :checked ~ input {
-    display: block;
-}
-.spoiler :checked ~ .textInput {
-    display: block;
+#addGames, #profile, #payments{
+    height: 100%;
+    width: calc(100% - 16px);
+    position: absolute;
+    background-color: #424242;
+    margin-top: -15px;
+    margin-left: -8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    z-index: 2000;
 }
 
-.spoiler :checked ~ textarea {
-    display: block;
+.setLine button{
+    float: right;
+}
+
+.close-button{
+    float: right;
+    max-width: none;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .textInput textarea{
-    width: 305px;
-    height: 60px;
+    width: 287px;
+    height: 120px;
+    padding: 4px 8px;
     border-radius: 3px;
+    border-width: 0;
     resize: none;
+    background-color: #2b2b2b;
+    color: #d9d9d9;
+    line-height: 1.5;
+    scrollbar-color: #2b2b2b #424242;
 }
-.textInput{
-    padding-left: 10px;
-    width: 300px;
+.aliasLabel{
+    display:inline-block;
+    margin-bottom: 5px;
 }
 
 .textInput.headCentered{
@@ -124,7 +131,7 @@ input:checked + .slider:before {
 .tooltip .tooltiptext {
     visibility: hidden;
     width: 220px;
-    background-color: black;
+    background-color: #424242;
     color: #fff;
     text-align: center;
     border-radius: 6px;
@@ -135,27 +142,62 @@ input:checked + .slider:before {
     top: 100%;
     left: 50%;
 }
-
-.tooltip .tooltiptextright {
-    visibility: hidden;
-    width: 220px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    position: absolute;
-    z-index: 1;
-    margin-left: -40px;
-    top: 100%;
-    left: 50%;
+.right{
+    margin-left: -40px !important;
+}
+.top{
+    top: unset !important;
+    bottom: 100% !important;
+    left: 50% !important;
+    margin-left: -60px !important;
 }
 
-.tooltip:hover .tooltiptextright {
-    visibility: visible;
-}
 .tooltip:hover .tooltiptext {
     visibility: visible;
+}
+
+button {
+    align-items: center;
+    background-color: #2196F3;
+    border: 0;
+    border-radius: 100px;
+    box-sizing: border-box;
+    color: #ffffff;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 10px;
+    line-height: 10px;
+    justify-content: center;
+    max-width: 480px;
+    min-height: 25px;
+    min-width: 0px;
+    overflow: hidden;
+    padding: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
+    touch-action: manipulation;
+    transition: background-color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, box-shadow 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+}
+
+button:hover,
+button:focus {
+    background-color: #16437E;
+    color: #ffffff;
+}
+
+button:active {
+    background: #09223b;
+    color: rgb(255, 255, 255, .7);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, .08);
+    color: rgba(0, 0, 0, .3);
 }
 
 @keyframes appear {

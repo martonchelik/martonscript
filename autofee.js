@@ -21,14 +21,14 @@ document.addEventListener('readystatechange', () => {
         let tickSet
         let cancelSet
         let obvTicksSet
+        let notPlayedSet
 
         function applyCheckboxStates(states) {
             tickSet = states.tickSet
             warningSet = states.warningSet
             cancelSet = states.cancelSet
             obvTicksSet = states.obvTicksSet
-            
-            console.log(cancelSet)
+            notPlayedSet = states.notPlayedSet
         }
             chrome.storage.onChanged.addListener((changes, areaName) => {
                 if (areaName === 'local' && changes.checkboxStates) {
@@ -37,7 +37,7 @@ document.addEventListener('readystatechange', () => {
             });
 
         chrome.storage.local.get('checkboxStates', (result) => {
-            if (result.checkboxStates) {
+            if (result.checkboxStates.paymentSet) {
                 applyCheckboxStates(result.checkboxStates);
                 const checkbox = document.getElementById('payment_fees');
                 if (!document.getElementsByClassName('payment-player-tags')[0].getElementsByClassName("player-tag-gambling_addict")[0]) {
@@ -53,10 +53,8 @@ document.addEventListener('readystatechange', () => {
                             if (bitcoinColumn && warningSet) {
                                 noFeeHover();
                                 console.log("no fee");
-                            } else {
+                            } else if (notPlayedSet){
                                 noFeeNoBlock();
-                                console.log(bitcoinColumn);
-                                console.log(warningSet);
 
                             }
                             break;

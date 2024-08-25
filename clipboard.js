@@ -53,7 +53,6 @@ function waitForElement(selector, callback) {
 function autocomplete(inp, displayArr, inputArr) {
     if (inp) {
         let currentFocus;
-
         function addEventListeners() {
             inp.addEventListener("input", onInput);
             inp.addEventListener("focus", onFocus);
@@ -69,13 +68,13 @@ function autocomplete(inp, displayArr, inputArr) {
             displayArr.forEach((item, i) => {
                 let index = item.toUpperCase().indexOf(val.toUpperCase());
                 if (index !== -1) {
-                    let b = createListItem(item, val, index, inputArr[i]);
+                    let b = createListItem(item, val, index, inputArr[i], i);
                     a.appendChild(b);
                 }
             });
         }
 
-        function onFocus(e) {
+        function onFocus() {
             let val = this.value;
             closeAllLists();
             currentFocus = -1;
@@ -84,7 +83,7 @@ function autocomplete(inp, displayArr, inputArr) {
             displayArr.forEach((item, i) => {
                 let index = item.toUpperCase().indexOf(val.toUpperCase());
                 if (index !== -1 || val === "") {
-                    let b = createListItem(item, val, index, inputArr[i]);
+                    let b = createListItem(item, val, index, inputArr[i], i);
                     a.appendChild(b);
                 }
             });
@@ -121,11 +120,12 @@ function autocomplete(inp, displayArr, inputArr) {
             return a;
         }
 
-        function createListItem(item, val, index, inputValue) {
+        function createListItem(item, val, index, inputValue, i) {
             let b = document.createElement("DIV");
             b.innerHTML = item.substr(0, index);
             b.innerHTML += "<strong>" + item.substr(index, val.length) + "</strong>";
             b.innerHTML += item.substr(index + val.length);
+            if (inputValue === "") inputValue = cancelDocsEN[i]
             b.innerHTML += "<input type='hidden' value='" + inputValue + "'>";
             b.addEventListener("click", function (e) {
                 inp.value = this.getElementsByTagName("input")[0].value;
@@ -156,7 +156,15 @@ function autocomplete(inp, displayArr, inputArr) {
                 }
             }
         }
-
+        const cancelDocsEN =["your document has been uploaded in error", "not required", "document is not required for verification", "you do not need to upload the document again", "your document is not fully visible",
+            "unreadable", "your card details are unreadable", "the card owner’s first and last name are unreadable", "the data on the photo is unreadable", "the quality of the photo does not meet verification requirements",
+            "fails to meet verification requirements. The photo on your card should show the first 6 digits, last 4 digits, expiration date, and owner’s first and last name",
+            "fails to meet verification requirements. Upload a full-spread photo of the first two pages of your passport. You may choose not to show your passport number", "your bank card has not been used",
+            "the photo fails to show your card number", "the photo fails to show the card owner’s name", "the photo fails to show the card expiry date", "the photo fails to show the card expiry date and card owner’s information",
+            "your card has expired", "you must provide a photo of your ID instead of a scanned image", "you must provide a passport photo, not a screenshot", "the reverse of the card is not required",
+            "the card belongs to a different person", "the information in the photo in the document does not match the data in the profile", "the document has expired",
+            "it is necessary to download the reverse side of the document", "does not meet verification requirements", "used photo editor", "A photo is required, not a screenshot",
+            "does not meet the verification requirements. The face is not fully visible", "does not meet verification requirements, a photo of the physical document is required"];
         addEventListeners();
     }
 }
@@ -164,14 +172,61 @@ function autocomplete(inp, displayArr, inputArr) {
 document.addEventListener('readystatechange', () => {
     if (document.readyState === 'complete') {
         chrome.storage.local.get('checkboxStates', function(result) {
-            if (result.checkboxStates && result.checkboxStates.clipboardSet) {
+            if (result.checkboxStates && result.checkboxStates.clipboardSet && result.checkboxStates.profileSet) {
                 setupAutocomplete();
             }
         });
     }
 });
 
+function waitForClass(selector, callback) {
+    const observer = new MutationObserver((mutations, obs) => {
+        const elements = document.querySelectorAll(selector);
+        if (elements.length > 0) {
+            obs.disconnect();
+            callback(elements);
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    // Initial check in case elements are already present
+    const initialElements = document.querySelectorAll(selector);
+    if (initialElements.length > 0) {
+        observer.disconnect();
+        callback(initialElements);
+    }
+}
+
+function setupClickCancel(){
+    waitForClass('a.unapprove-document', (buttons) => {
+        waitForElement('unapprove_document_sidebar_section', (element) => {
+            buttons.forEach((button) => {
+
+                button.addEventListener('click', () => {
+                    const docId = button.getAttribute("href").split("id=")[1];
+                    const stringId = "input[value=\"" +docId + "\"]"
+                    waitForClass(stringId, () =>{
+                        document.querySelectorAll(stringId)[0].parentElement.parentElement.parentElement.parentElement.querySelector('#document_comment').focus()
+                    })
+
+                })
+            });
+        });
+    })
+}
+
 function setupAutocomplete() {
+    setupClickCancel();
+    const phone = document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0] ?
+        document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0].getElementsByTagName('div')[0].textContent :
+        "bebra";
+    const infoSidebar = document.getElementById('player_details_sidebar_section');
+    const playerCountry = infoSidebar.getElementsByClassName('row-country')[0].getElementsByTagName('td')[0].textContent;
+
     const comments = ["В чеке", "По лимиту", "После прохождения предыдущих", "Тест", "На согласовании в accounts-payments", "Проверен", "Не отыгран депозит",];
     const commentsForProfiles = ["Аккаунт заблокирован по п.п. 4.4", "Аккаунт заблокирован, т.к. игроку нет 18-ти лет", "Перед верификацией запросить местоположение",
         "Аккаунт заблокирован по п.п. 4.4 до возвращения в разрешённый регион", "Дубликат заблокирован. Основной - ", "Дубликат (почта) заблокирован",
@@ -229,14 +284,14 @@ function setupAutocomplete() {
         "la tarjeta pertenece a otra persona", "la información de la foto en el documento no coincide con los datos del perfil", "el documento ha caducado",
         "es necesario descargar el reverso del documento", "No cumple con los requisitos de verificación", "Editor de fotos utilizado", "Se necesita fotografía, no una captura de pantalla",
         "no cumple con los requisitos de verificación. La cara no es completamente visible.", ""];
-    const cancelDocsFR =["le document a été téléchargé par erreur", "non requis", "le document n’est pas nécessaire pour la vérification", "il n’est pas nécessaire de télécharger le document à nouveau", "le document n'est pas visible dans son intégralité",
+    const cancelDocsFR =["le document a été téléchargé par erreur", "non requis", "le document n’est pas nécessaire pour la vérification", "il n’est pas nécessaire de télécharger le document à nouveau", "le document n’est pas visible dans son intégralité",
         "illisible", "les informations de la carte bancaire sont illisibles", "le nom et le prénom du titulaire de la carte bancaire sont illisibles", "les informations sont illisibles sur la photo", "la qualité de la photo ne répond pas aux exigences de vérification",
         "ne répond pas aux exigences de vérification. Les informations suivantes doivent figurer sur la photo de votre carte bancaire : les 6 premiers chiffres, les 4 derniers chiffres, la date d’expiration, ainsi que le nom et le prénom du titulaire de la carte",
-        "ne répond pas aux exigences de vérification. Vous devez télécharger une photo des deux premières pages de votre passeport, dans leur totalité. Si vous le souhaitez, vous pouvez cacher le numéro du passeport", "votre carte bancaire n'a pas été utilisée",
-        "le numéro de votre carte bancaire n'est pas visible sur la photo", "le nom du titulaire de la carte bancaire n'est pas visible sur la photo", "la date d’expiration de la carte bancaire n'est pas visible sur la photo", "la date d’expiration et le nom du titulaire de la carte bancaire ne sont pas visibles sur la photo",
-        "votre carte bancaire est expirée", "vous devez fournir une photo de votre passeport au lieu d'un scan", "Pas de photo de passeport, pas d'écran", "le verso de la carte bancaire n'est pas requis",
+        "ne répond pas aux exigences de vérification. Vous devez télécharger une photo des deux premières pages de votre passeport, dans leur totalité. Si vous le souhaitez, vous pouvez cacher le numéro du passeport", "votre carte bancaire n’a pas été utilisée",
+        "le numéro de votre carte bancaire n’est pas visible sur la photo", "le nom du titulaire de la carte bancaire n’est pas visible sur la photo", "la date d’expiration de la carte bancaire n’est pas visible sur la photo", "la date d’expiration et le nom du titulaire de la carte bancaire ne sont pas visibles sur la photo",
+        "votre carte bancaire est expirée", "vous devez fournir une photo de votre passeport au lieu d’un scan", "Pas de photo de passeport, pas d’écran", "le verso de la carte bancaire n’est pas requis",
         "la carte bancaire appartient à quelqu’un d’autre", "les données de la photo dans le document ne correspondent pas à celles du profil", "le document a expiré",
-        "vous devez télécharger le verso du document", "", "", "une photo est nécessaire, pas une capture d'écran",
+        "vous devez télécharger le verso du document", "", "", "une photo est nécessaire, pas une capture d’écran",
         "", ""];
     const cancelDocsTR =["belgeniz yanlışlıkla yüklendi", "gerekli değildir", "belge doğrulama için gerekli değildir", "belgeyi tekrar yüklemenize gerek yoktur", "belgeniz tam olarak görünmüyor",
         "okunamaz", "kart bilgileriniz okunamaz durumda", "kart sahibinin adı ve soyadı okunamaz durumda", "fotoğraf üzerindeki veriler okunamaz durumda", "fotoğraf kalitesi doğrulama gerekliliklerini karşılamıyor",
@@ -297,31 +352,27 @@ function setupAutocomplete() {
         "Документ с CPF", "На мифинити", "Дубликат", "По номеру телефона из профиля, почте или CPF", "На другую иконку", "Завершить бонусную ставку в игре",
         "На номер из профиля или скрин из ЛК", "Пластик", "Выписка по карте", "На карту или на другую иконку "];
 
-    if (document.getElementById('active_admin_comment_body')) {
-        const element = document.getElementById('active_admin_comment_body');
+
+    waitForElement('active_admin_comment_body', (element) => {
         if (window.location.href.indexOf("maxbit.private/admin/players/") != -1) {
             autocomplete(element, commentsForProfiles, commentsForProfiles);
         } else {
             autocomplete(element, comments, comments);
         }
-    } else {
-        waitForElement('active_admin_comment_body', (element) => {
-            console.log('Element found:', element);
-            autocomplete(element, comments, comments);
-        });
-    }
+    });
+
 
     waitForElement('cashout_cancel_sidebar_section', (element) => {
-        console.log('Element found:', element);
         const cancelComment = element.getElementsByTagName('textarea')[0];
         autocomplete(cancelComment, cancels, cancels);
     });
 
     waitForElement('unapprove_document_sidebar_section', (element) => {
-        console.log('Element found:', element);
         const cancelDocComment = element.getElementsByTagName('textarea')[0];
         const locale = element.getElementsByClassName('locale')[0].textContent.toUpperCase().trim();
-        switch (locale) {
+        if ((phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Украина") || playerCountry == 'UA') && (phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Россия") || playerCountry == 'RU')){
+            autocomplete(cancelDocComment, cancelDocs, cancelDocsUA);
+        }else switch (locale) {
             case 'RU':
                 autocomplete(cancelDocComment, cancelDocs, cancelDocs);
                 break;
@@ -352,17 +403,18 @@ function setupAutocomplete() {
             case 'KZ':
                 autocomplete(cancelDocComment, cancelDocs, cancelDocsKZ);
                 break;
-            case 'FIN':
+            case 'FI':
                 autocomplete(cancelDocComment, cancelDocs, cancelDocsFIN);
                 break;
             case 'DA':
                 autocomplete(cancelDocComment, cancelDocs, cancelDocsDA);
                 break;
-            case 'NOR':
+            case 'NOR'||'NO'||'NR':
                 autocomplete(cancelDocComment, cancelDocs, cancelDocsNOR);
                 break;
             default:
                 console.log('what a  language?');
+                autocomplete(cancelDocComment, cancelDocs, cancelDocsEN)
                 break;
         }
     });
