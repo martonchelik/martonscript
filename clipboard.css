@@ -5,6 +5,15 @@
   height: 100px;
 }
 
+.autocomplete-items-cancel {
+  position: absolute;
+  z-index: 99;
+  overflow-y: auto;
+  height: 140px;
+
+}
+
+
 .autocomplete-items div {
   padding: 10px;
   cursor: pointer;
@@ -18,6 +27,23 @@
 }
 
 .autocomplete-items div:hover {
+  background-color: #64acfc;
+
+}
+
+.autocomplete-items-cancel div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.autocomplete-items-cancel input{
+  height: 38px;
+  width: 100px;
+}
+
+.autocomplete-items-cancel div:hover {
   background-color: #64acfc;
 }
 

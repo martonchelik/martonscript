@@ -41,12 +41,17 @@ document.addEventListener('readystatechange', () => {
         function checkGame(gameName){
             switch (true) {
                 case roulette.includes(gameName.toLowerCase()):
+                case gameName.toLowerCase().includes('roulette'):
+                case gameName.toLowerCase().includes('roleta'):
+                case gameName.toLowerCase().includes('rulet'):
+                case gameName.toLowerCase().includes('ruleta'):
                     return 'roulette';
                     break;
                 case instant.includes(gameName.toLowerCase()):
                     return 'instant';
                     break;
                 case baccarat.includes(gameName.toLowerCase()):
+                case gameName.toLowerCase().includes('baccarat'):
                     return 'baccarat';
                     break;
                 default:

@@ -18,12 +18,12 @@
         <button class= "close-button" id="closeAddGamesMenu">X</button>
     </h3>
     <div class="textInput">
-        <label class="aliasLabel" for="roulette_custom">Рулетка</label>
-        <textarea id='roulette_custom'></textarea>
+        <label class="aliasLabel" for="roulette_custom" style="display: none">Рулетка</label>
+        <textarea id='roulette_custom' style="display: none"></textarea>
         <label class="aliasLabel" for="instant_custom">Instant Games</label>
         <textarea id='instant_custom'></textarea>
-        <label class="aliasLabel" for="baccarat_custom">Baccarat</label>
-        <textarea id='baccarat_custom'></textarea>
+        <label class="aliasLabel" for="baccarat_custom" style="display: none">Baccarat</label>
+        <textarea id='baccarat_custom' style="display: none"></textarea>
     </div>
 </div>
 
@@ -35,82 +35,167 @@
         <button class= "close-button" id="closeProfileMenu">X</button>
     </h3>
     <div class="setLine">
-    <span>
-        Панель дубликатов(бета)
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext right">Панель с дубликатами сверху. Если не заблочен или нет коммента - отмечается красным, в остальных случаях зеленым</span>
-        </div>
-    </span>
+        <span>
+            Панель дубликатов
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext right">Панель с дубликатами сверху. Если не заблочен или нет коммента - отмечается красным, в остальных случаях зеленым</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="duplicateCheckerSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Помечать если запрещена страна
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext">Оставляет пометки в шапке страницы. "Запрещенный вход", если были действия из запрещенного региона, "запрещенный регион", если номер телефона запрещенной страны</span>
-        </div>
-    </span>
+        <span>
+            Помечать если запрещена страна
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Оставляет пометки в шапке страницы. "Запрещенный вход", если были действия из запрещенного региона, "запрещенный регион", если номер телефона запрещенной страны</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="forbiddenCountriesSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Шаблоны для отмен, коментариев и отклонения документов
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext right">При отмене, комментировании или отклонении документов при нажатии на текстовое поле будет открываться список шаблонов с возможностью выбора.
-                Двигаться по спику можно как при помощи мыши, так и при помощи клавиатуры(движение вверх/вниз на стрелочках и выбор шаблона клавишей enter)
-            </span>
-        </div>
-    </span>
+        <span>
+            Шаблоны для отмен, комментариев и отклонения документов
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext right">При отмене, комментировании или отклонении документов при нажатии на текстовое поле будет открываться список шаблонов с возможностью выбора.
+                    При вводе текста в текстовое поле будет осуществляться поиск совпадений введенного текста с шаблонами. Двигаться по спику можно как при помощи мыши, так и при помощи клавиатуры(движение вверх/вниз на стрелочках и выбор шаблона клавишей enter).
+                    При выборе одного из шаблонов "В чеке" + причина отправки в чек в комментарий вставляется только надпись "В чеке", а в буфер обмена будет скопирована ссылка на профиль игрока и причина отправки в чек.
+                </span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="clipboardSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Скрипт для документов
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext right">Старый добрый скрипт для документов, но пока не в полном объёме(вроде)</span>
-        </div>
-    </span>
+        <span>
+            Шаблоны для комментариев к документам
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">При нажатие на поле ввода в комментарии к документу будет открываться список шаблонов состоящий из
+                    всех инструментов платежа, использованных в последних платежах (в том числе из тех, которые еще не успели подвязаться к профилю)
+                </span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="documentCommentTemplatesSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Инфо об игроке
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext right">В панели документов сверху и снизу отображается информация об игроке(имя, фамилия, дата рождения, почта, подтверждены ли телефон и почта)</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="documentsSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Дублировать выше ссылки на ставки
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext">Дублировать ссылки на ставки игрока в казино и на спорт в соотвествующих бонусах и в шапке профиля</span>
-        </div>
-    </span>
+        <span>
+            Дублировать выше ссылки на ставки
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Дублировать ссылки на ставки игрока в казино и на спорт в соотвествующих бонусах и в шапке профиля</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="betsDublicateSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Отмечать неверифицированные карты
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext">Отмечает неверифицированные карты и если по картам есть комменты</span>
-        </div>
-    </span>
+        <span>
+            Отмечать неверифицированные карты
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Отмечает неверифицированные карты и если по картам есть комменты</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="cardsSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Кнопки для снятия тегов asked for из панели документов
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext right">Добавляет в панель документов кнопки для снятия с игрока тегов asked for card, docs, и selfie.
+                    Перед снятием тегов есть полторы секунды чтобы выбрать несколько тегов если требуется</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="askedTagSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Помечать instadebit и ideposit
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">В панели выплат игрока подсвечивает депозиты через instadebit/idebit. Желтым, если депозит был совершен больше 10 днец назад, красным, если 10 и меньше дней назад</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="checkPSSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Кнопки "правка" и "комментарий" при просмотре документа
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">Добавляет функцию правки информации об игроке не выходя из просмотра документов игрока. При нажатии на кнопку "Правка"
+                    снизу экрана во время просмотра документов игрока откроется отдельное окно с правкой информации об игроке. Оно автоматически закрывается после изменения данных игрока. Так же добавляет кнопку
+                    "Комментарий", при нажатии на которую открывается поле ввода комментария к просматриваемому документу</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="editPopupSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Меню символов в правке
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">На вкладке изменения информации об игроке добавляет меню с символами из
+                    украинского и казахского языков для строчек с именем и фамилией. Нажать, выбрать нужный язык, выбрать нужный символ и он добавится в соответствующую строку</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="alphabetSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Дублировать инфо об игроке при открытом документе
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">При открытии документа вместо имени фотографии дублируется информация об игроке как в панели документов</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="imgInfoSet">
             <span class="slider round"></span>
         </label>
     </div>
@@ -124,67 +209,147 @@
         <button class= "close-button" id="closePaymentMenu">X</button>
     </h3>
     <div class="setLine">
-    <span>
-        Автоматическая галочка на комиссии
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext">Автоматически ставит галочку на комиссии, если не отыгран депозит и в основной информации о выплате, и сбоку, а так же если есть согласие на комиссию и игрок не лудоман.</span>
-        </div>
-    </span>
+        <span>
+            Автоматическая галочка на комиссии
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Автоматически ставит галочку на комиссии, если не отыгран депозит и в основной информации о выплате, и сбоку, а так же если есть согласие на комиссию и игрок не лудоман.</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="tickSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Автоматическая галочка на email и мессенджер
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext">Автоматически ставит галочки на "Отправить по Емейл" и "Отправить в мессенджер" в окне отмены платежа если выбран вариант "Без обоснования"</span>
-        </div>
-    </span>
+        <span>
+            Автоматическая галочка на email и мессенджер
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Автоматически ставит галочки на "Отправить по Емейл" и "Отправить в мессенджер" в окне отмены платежа если выбран вариант "Без обоснования"</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="obvTicksSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Окно с предупреждением об отсутсвии согласия на комиссию
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext right">Если нет согласия на комиссию и не отыгран депозит - перед выводом сначала будет окошко с предупреждением об этом, а потом возможность ввести код и провести выплату</span>
-        </div>
-    </span>
+        <span>
+            Окно с предупреждением об отсутсвии согласия на комиссию
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext right">Если нет согласия на комиссию и не отыгран депозит - перед выводом сначала будет окошко с предупреждением об этом, а потом возможность ввести код и провести выплату</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="warningSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        "Внимание, нет согласия на комиссию"
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext"> Если нет согласия ка комиссию и депозит не отыгран - в строке "Внимание" пишет об этом</span>
-        </div>
-    </span>
+        <span>
+            "Внимание, нет согласия на комиссию"
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext"> Если нет согласия ка комиссию и депозит не отыгран - в строке "Внимание" пишет об этом</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="notPlayedSet">
             <span class="slider round"></span>
         </label>
     </div>
     <div class="setLine">
-    <span>
-        Автоматическая галочка на 'не отыгран депозит'
-        <div class="tooltip">
-            <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext">Если вы отменяете выплату, в которой не отыгран депозит, автоматически выбирает вариант "не отыгран депозит" в окне отмены</span>
-        </div>
-    </span>
+        <span>
+            Автоматическая галочка на 'не отыгран депозит'
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Если вы отменяете выплату, в которой не отыгран депозит, автоматически выбирает вариант "не отыгран депозит" в окне отмены</span>
+            </div>
+        </span>
         <label class="switch">
             <input type="checkbox" id="cancelSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Галочка с двойным комментарием для выплаты
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Включает возможность сразу оставить двойной комментарий выплате(тот, который вы написали и второй с точкой). Управляется галочкой в комментарии к выплате.
+                    Если включено, чтобы оставился двойной комментарий, требуется дождаться пока страница перестанет обновляться</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="doubleCommentSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Галочка с двойным комментарием прожата по умолчанию(если включена)
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext">Галочка включающая двойной комментарий по умолчанию прожата</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="doubleCommentDefaultSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Инфо о выплате стримера
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">Добавляет в выплаты игроков с тегом "стример_согласование_выплаты" кнопку при нажатии на которую будет копироваться проект, почта игрока и сумма вывода, если вывод на крипту, то еще и крипта</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="streamerInfoSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Автоматическая вставка неверифицированных платежных средств
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">При выборе опций отмены "Банковский счет", "Требуется верификация криптокошелька", "Не подтверждены платежные методы"
+                    скрипт проверяет, использовалось ли платежное средство и верифицировано ли оно, если нет - автоматически вставляет в выбраное поле</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="unverifiedPaymentsSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Автоматическое нажатие кнопки "произвести платеж" при вводе кода
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">При вставке(руками или автоматически из Аутентификатора) кода аутентификации в его поле выплата автоматически проводится</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="authAutoSubmitSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="setLine">
+        <span>
+            Комментарий стримерам
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">При копировании информации по выплате стримера в выплате автоматически ставится комментарий "На согласовании"</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="streamerCommSet">
             <span class="slider round"></span>
         </label>
     </div>
@@ -213,7 +378,7 @@
         Скрипты для профиля(документов)
         <div class="tooltip">
             <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext top">Отключает все настройки для профиля игра. В меню настройки можно настроить каждую функцию отдельно.
+            <span class="tooltiptext">Отключает все настройки для профиля игра. В меню настройки можно настроить каждую функцию отдельно.
             </span>
         </div>
         <button id="toggleProfileSettings">Настройки</button>
@@ -225,18 +390,32 @@
 </div>
 <div class="setLine">
     <span>
-        Коэфициенты ставок
+        Коэффициенты ставок
         <div class="tooltip">
             <i class="fa fa-info-circle"></i>
-            <span class="tooltiptext top">Добавляет коэффициенты на страницы со ставками в казино. Отмечает красным: рулетку х2, х3, инстант от х1 до х1.4, любые ставки х1000.
-                Жёлтым: ставки на весь (+-10%) баланс в руллетке, ставки от х1 до х1.3 в рулетке, ставки на весь (+-20%) баланс в баккарате, ставки х1 в баккарате.
-                База игр неполная, её можно дополнить нажав на "Добавить игры" ниже
+            <span class="tooltiptext right">Добавляет коэффициенты на страницы со ставками в казино. Отмечает красным: рулетку х2, х3, инстант от х1 до х1.4, любые ставки х1000.
+                Жёлтым: ставки на весь (+-10%) баланс в рулетке, ставки от х1 до х1.3 в рулетке, ставки на весь (+-20%) баланс в баккарате, ставки х1 в баккарате.
+                База игр instant неполная, её можно дополнить нажав на "Добавить игры" ниже
             </span>
         </div>
         <button id="toggleCoefficientSettings">Добавить игры</button>
     </span>
     <label class="switch">
         <input type="checkbox" id="coefficientSet">
+        <span class="slider round"></span>
+    </label>
+</div>
+<div class="setLine">
+    <span>
+        Скрипт для тикетов
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext right">При нажатии на кнопку рядом с почтой игрока копирует информацию по депозиту для тикета
+            </span>
+        </div>
+    </span>
+    <label class="switch">
+        <input type="checkbox" id="ticketSet">
         <span class="slider round"></span>
     </label>
 </div>

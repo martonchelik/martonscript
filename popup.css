@@ -1,5 +1,5 @@
 body{
-    height: 480px;
+    height: 520px;
     width: 320px;
     background-color: #2b2b2b;
     color: white;
@@ -31,6 +31,10 @@ body{
     z-index: 2000;
 }
 
+#addGames .tooltiptext, #profile .tooltiptext, #payments .tooltiptext{
+    background-color: #595959;
+}
+
 .setLine button{
     float: right;
 }
@@ -49,6 +53,7 @@ body{
     border-radius: 3px;
     border-width: 0;
     resize: none;
+    box-shadow: inset 0px 0px 5px 2px black;
     background-color: #2b2b2b;
     color: #d9d9d9;
     line-height: 1.5;
@@ -132,10 +137,11 @@ input:checked + .slider:before {
     visibility: hidden;
     width: 220px;
     background-color: #424242;
+    box-shadow: 0 0 6px 0 black;
     color: #fff;
     text-align: center;
     border-radius: 6px;
-    padding: 5px 0;
+    padding: 5px 3px;
     position: absolute;
     z-index: 1;
     margin-left: -170px;

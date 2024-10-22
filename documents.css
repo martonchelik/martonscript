@@ -6,3 +6,11 @@
     margin-left: 80px;
     margin-top: -1.6em;
 }
+.stop-scrolling{
+    height: 100%;
+    overflow: hidden;
+}
+#canvasPlayerInfo{
+    margin-left: 0;
+    margin-top: 0;
+}

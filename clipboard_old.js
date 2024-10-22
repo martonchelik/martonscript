@@ -6,7 +6,6 @@ function waitForElement(selector, callback) {
         }
         function stopObserving() {
             obs.disconnect();
-            console.log('disconnected')
         }
 
         function startObserving() {
@@ -170,7 +169,7 @@ function autocompleteCancel(inp, displayArr, inputArr) {
     }
 }
 
-function autocomplete(inp, displayArr, inputArr) {
+function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
     if (inp) {
         let currentFocus;
         function addEventListeners() {
@@ -246,7 +245,19 @@ function autocomplete(inp, displayArr, inputArr) {
             b.innerHTML = item.substr(0, index);
             b.innerHTML += "<strong>" + item.substr(index, val.length) + "</strong>";
             b.innerHTML += item.substr(index + val.length);
-            if (inputValue === "") inputValue = cancelDocsEN[i]
+            if (inputValue === "На номер из профиля или скрин из ЛК"){
+                const cashoutPhone = document.getElementsByClassName('row-sbp')[0]?
+                    document.getElementsByClassName('row-sbp')[0].getElementsByTagName('td')[0].textContent.split(',')[0]:
+                    document.getElementsByClassName('row-phone')[0]?
+                        document.getElementsByClassName('row-phone')[0].getElementsByTagName('td')[0].textContent:
+                        ''
+                inputValue += ' ' + cashoutPhone
+            }
+            if ((inputValue === "Пластик"||inputValue === "Выписка по карте") && !verifiedAndUsed){
+                const cardMask =  document.getElementsByClassName('row-card_mask')[0]
+                    ? document.getElementsByClassName('row-card_mask')[0].getElementsByTagName('td')[0].textContent : null
+                inputValue += ' ' + cardMask
+            }
             b.innerHTML += "<input type='hidden' value='" + inputValue + "'>";
             b.addEventListener("click", function (e) {
                 inp.value = this.getElementsByTagName("input")[0].value;
@@ -277,27 +288,64 @@ function autocomplete(inp, displayArr, inputArr) {
                 }
             }
         }
-        const cancelDocsEN =["your document has been uploaded in error", "not required", "document is not required for verification", "you do not need to upload the document again", "your document is not fully visible",
-            "unreadable", "your card details are unreadable", "the card owner’s first and last name are unreadable", "the data on the photo is unreadable", "the quality of the photo does not meet verification requirements",
-            "fails to meet verification requirements. The photo on your card should show the first 6 digits, last 4 digits, expiration date, and owner’s first and last name",
-            "fails to meet verification requirements. Upload a full-spread photo of the first two pages of your passport. You may choose not to show your passport number", "your bank card has not been used",
-            "the photo fails to show your card number", "the photo fails to show the card owner’s name", "the photo fails to show the card expiry date", "the photo fails to show the card expiry date and card owner’s information",
-            "your card has expired", "you must provide a photo of your ID instead of a scanned image", "you must provide a passport photo, not a screenshot", "the reverse of the card is not required",
-            "the card belongs to a different person", "the information in the photo in the document does not match the data in the profile", "the document has expired",
-            "it is necessary to download the reverse side of the document", "does not meet verification requirements", "used photo editor", "A photo is required, not a screenshot",
-            "does not meet the verification requirements. The face is not fully visible", "does not meet verification requirements, a photo of the physical document is required"];
         addEventListeners();
     }
 }
+
+let cardMask = null
+let paymentOptionsTable = null
+let paymentVerified = null
+let paymentUsed = null
+
+
 
 document.addEventListener('readystatechange', () => {
     if (document.readyState === 'complete') {
         chrome.storage.local.get('checkboxStates', function(result) {
             if (result.checkboxStates && result.checkboxStates.clipboardSet && result.checkboxStates.profileSet) {
-                setupAutocomplete();
+                setupAutocomplete(result.checkboxStates.documentCommentTemplatesSet);
             }
         });
+        chrome.storage.local.get('checkboxStates', function(result) {
+            if (result.checkboxStates && result.checkboxStates.editPopupSet && result.checkboxStates.profileSet) {
+                editComments();;
+            }
+        });
+        if (window.location.href.indexOf("payments/") != -1) {
+            let paymentID = parseInt(window.location.href.split("/")[5]);
+
+            cardMask =  document.getElementsByClassName('row-card_mask')[0]
+                ? document.getElementsByClassName('row-card_mask')[0].getElementsByTagName('td')[0].textContent : null
+            paymentOptionsTable = document.getElementById('payment_option_sidebar_section')
+            paymentVerified = paymentOptionsTable.innerHTML.includes('status_tag yes')
+            paymentUsed =paymentOptionsTable.innerText.includes(cardMask)
+            chrome.storage.local.get(['doubleComm', 'paymentID', 'checkboxStates'], function(result) {
+                if (result.doubleComm && paymentID == result.paymentID) {
+                    chrome.storage.local.set({
+                        doubleComm: false
+                    }, function() {
+                        console.log('double comm off');
+                    });
+                    const commentTextArea = document.getElementById('active_admin_comment_body')
+                    const commentForm = document.getElementById('new_active_admin_comment');
+                    commentTextArea.value = '.'
+                    commentForm.submit()
+                    if(result.checkboxStates.autoCloseSet){
+                        window.close()
+                    }
+                }else{
+                    chrome.storage.local.set({
+                        doubleComm: false
+                    }, function() {
+                        console.log('double comm off');
+                    });
+                }
+            });
+
+        }
+
     }
+
 });
 
 function waitForClass(selector, callback) {
@@ -306,6 +354,7 @@ function waitForClass(selector, callback) {
         if (elements.length > 0) {
             obs.disconnect();
             callback(elements);
+
         }
     });
 
@@ -322,7 +371,7 @@ function waitForClass(selector, callback) {
     }
 }
 
-function setupClickCancel(){
+/*function setupClickCancel(){
     waitForClass('a.unapprove-document', (buttons) => {
         waitForElement('unapprove_document_sidebar_section', (element) => {
             buttons.forEach((button) => {
@@ -338,21 +387,29 @@ function setupClickCancel(){
             });
         });
     })
-}
+}*/
 
-function setupAutocomplete() {
-    setupClickCancel();
-    const phone = document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0]?
-        document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0].getElementsByTagName('div')[0].textContent :
-        "bebra";
-    const infoSidebar = document.getElementById('player_details_sidebar_section');
+let commentForImageButton
+let uiId = 16;
+
+function setupAutocomplete(documentCommentTemplatesSet) {
+/*    setupClickCancel();*/
+    let phone = 'notset'
+
+
+    if(document.getElementById('phones_sidebar_section')){
+        phone = document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0]?
+            document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0].getElementsByTagName('div')[0].textContent :
+            "bebra";
+    }
+    const infoSidebar = document.getElementById('player_details_sidebar_section')?document.getElementById('player_details_sidebar_section'):null;
     const playerCountry = infoSidebar? infoSidebar.getElementsByClassName('row-country')[0].getElementsByTagName('td')[0].textContent : "bebra"
 
 
-    const comments = ["В чеке", "По лимиту", "После прохождения предыдущих", "Тест", "На согласовании в accounts-payments", "Проверен", "Не отыгран депозит", "На согласовании", ""];
+    const comments = ["В чеке", "По лимиту", "После прохождения предыдущих", "Тест", "На согласовании в accounts-payments", "Проверен", "Не отыгран депозит", "На согласовании","Провести позже, как заработает", "Позже или на карту", "Позже", "Позже или на карту / другую ПС", "Позже или на другую ПС",];
     const commentsForProfiles = ["Аккаунт заблокирован по п.п. 4.4", "Аккаунт заблокирован, т.к. игроку нет 18-ти лет", "Перед верификацией запросить местоположение",
-        "Аккаунт заблокирован по п.п. 4.4 до возвращения в разрешённый регион", "Дубликат заблокирован. Основной - ", "Дубликат (почта) заблокирован",
-        "Данные в профиле изменены в соответствии с данными в документе.", "Данные скорректированы."];
+        "Аккаунт заблокирован по п.п. 4.4 до возвращения в разрешённый регион", "Дубликат заблокирован. Основной - ", "Дубликат почта заблокирован",
+        "Данные в профиле изменены в соответствии с данными в документе.", "Данные скорректированы.", "Аккаунт заблокирован по причине: лудоман"];
     const cancelDocs = [
         "повторная загрузка документа не требуется",
         "не требуется",
@@ -770,77 +827,322 @@ function setupAutocomplete() {
         ""
     ]
 
-    const cancels = ["На карту", "На МК", "На пиастрикс", "На мифинити", "Переоформить корректно", "Обратная сторона id", "На карту или банковским переводом",
-        "Документ с CPF", "На мифинити", "Дубликат", "По номеру телефона из профиля, почте или CPF", "На другую иконку", "Завершить бонусную ставку в игре",
-        "На номер из профиля или скрин из ЛК", "Пластик", "Выписка по карте", "На карту или на другую иконку", "Верифицировать номер в профиле", "Верифицировать", "документы владельца, потом запрет"];
+    const cancels = ["На карту", "На МК", "На пиастрикс", "На мифинити", "Переоформить корректно", "На верифицированную карту", "На верифицированную карту или на другую иконку", "Обратная сторона id", "На карту или банковским переводом",
+        "Документ с CPF", "На мифинити", "Дубликат", "По номеру телефона из профиля, почте или CPF", "На другую иконку", "Завершить бонусную ставку в игре ", "Завершить бонусные ставки в играх ",
+        "На номер из профиля или скрин из ЛК", "Пластик", "Выписка по карте", "На карту или на другую иконку", "Верифицировать номер в профиле", "Верифицировать ", "документы владельца, потом запрет", "На крипту", "На skrill",
+        "Верифицировать skrill", "На бинанс"];
 
 
-
+    let lastPayments = null
+    let allLastPaymentOptions = []
+    let setOfLastPaymentOptions  = null
     waitForElement('active_admin_comment_body', (element) => {
-        if (window.location.href.indexOf("maxbit.private/admin/players/") != -1) {
-            autocomplete(element, commentsForProfiles, commentsForProfiles);
+        if (window.location.href.indexOf("players") != -1) {
+            autocomplete(element, commentsForProfiles, commentsForProfiles, false);
+            lastPayments  = document.evaluate("//h3[contains(., 'Последние платежи')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext().parentElement;
+            lastPayments.querySelectorAll("tbody td.col-account").forEach(payOpt=>{
+                if(payOpt.textContent.split(',')[0]!='')
+                    allLastPaymentOptions.push(payOpt.textContent.split(',')[0])
+            })
+            setOfLastPaymentOptions = [...new Set(allLastPaymentOptions)]
         }
     });
-    if (!window.location.href.indexOf("maxbit.private/admin/players/") != -1) {
-        autocomplete(document.getElementById('active_admin_comment_body'), comments, comments);
+    if (window.location.href.indexOf("payments/") != -1 && !document.getElementsByClassName('row-user')[0].getElementsByTagName('div')[0].parentElement.innerHTML.includes('стример_согласование_выплаты')) {
+        const commentTextArea = document.getElementById('active_admin_comment_body')
+        autocomplete(commentTextArea, comments, comments, false);
+        chrome.storage.local.get('checkboxStates', function(result) {
+            if (result.checkboxStates && result.checkboxStates.doubleCommentSet) {
+                const commentButtonSection = document.getElementById('active_admin_comment_submit_action').parentElement
+                const doubleCheckbox = document.createElement('li');
+                const commentForm = document.getElementById('new_active_admin_comment');
+                commentButtonSection.appendChild(doubleCheckbox)
+                doubleCheckbox.style.display = 'flex'
+                doubleCheckbox.style.flexDirection = 'row'
+                doubleCheckbox.style.alignItems = 'center'
+                doubleCheckbox.style.paddingLeft = '13em'
+                if(result.checkboxStates.doubleCommentDefaultSet){
+                    doubleCheckbox.innerHTML += `<input type="checkbox" style="zoom:2" id="double_checkbox" checked>
+                                                 <span class="translation_missing" style="font-size: 1.5em; padding-left: 1em">Двойной комментарий</span>`
+                }else{
+                    doubleCheckbox.innerHTML += `<input type="checkbox" style="zoom:2" id="double_checkbox">
+                                                 <span class="translation_missing" style="font-size: 1.5em; padding-left: 1em">Двойной комментарий</span>`
+                }
+
+                commentForm.addEventListener('submit', ()=>{
+                    if (document.getElementById('double_checkbox').checked){
+                        let paymentID = parseInt(window.location.href.split("/")[5]);
+                        chrome.storage.local.set({
+                            doubleComm: true,
+                            paymentID: paymentID
+                        }, function() {
+                            console.log('double comm set');
+                        });
+                    }
+                })
+            }
+        });
+
+
     }
 
 
+
+    function currentUIID(){
+        console.log(document.getElementById('ui-id-' + (uiId-1)))
+        while (document.getElementById('ui-id-' + uiId)) {
+            uiId++
+        }
+    }
     waitForElement('cashout_cancel_sidebar_section', (element) => {
         const cancelComment = element.getElementsByTagName('textarea')[0];
-        autocomplete(cancelComment, cancels, cancels);
+        autocomplete(cancelComment, cancels, cancels, (paymentVerified&&paymentUsed));
     });
 
-    waitForElement('unapprove_document_sidebar_section', (element) => {
-        const cancelDocComment = element.getElementsByTagName('textarea')[0];
-        const locale = element.getElementsByClassName('locale')[0].textContent.toUpperCase().trim();
-        if (((phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Украина")) || playerCountry == 'UA') && !((phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Россия")) || playerCountry == 'RU')){
-            autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsUA);
-        }else switch (locale) {
-            case 'RU':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocs);
-                break;
-            case 'EN':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN);
-                break;
-            case 'DE':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDE);
-                break;
-            case 'PT':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPT);
-                break;
-            case 'UA':
+
+
+    function findAllButtons() {
+        waitForClass('a.button.toggle-approve.comment[href="#"][data-status="comment"]', (buttons) => {
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentUIID();
+                    console.log("clickity click com", uiId)
+                    autocompleteDocComments(documentCommentTemplatesSet);
+
+                })
+            });
+        })
+        waitForClass('a.button.toggle-approve.approved[href="#"][data-status="approved"]', (buttons) => {
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentUIID();
+                    console.log("clickity click approve", uiId)
+                    setTimeout(findAllButtons, 100)
+                })
+            });
+        })
+        waitForClass('a.button.toggle-approve.edit[href="#"][data-status="edit"]', (buttons) => {
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentUIID();
+                    console.log("clickity click edit", uiId)
+                })
+            });
+        })
+
+        waitForClass('a.button.toggle-approve.not_approved[href="#"][data-status="not_approved"]', (buttons) => {
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentUIID();
+                    console.log("clickity click not approve", uiId)
+                    cancelDocComments();
+                })
+            });
+        })
+        waitForClass('td.preview', (previews) => {
+            previews.forEach((preview) => {
+                preview.addEventListener('click', () => {
+                    console.log("clickity click img")
+                    commentForImageButton = preview.parentElement.querySelectorAll('a.button.toggle-approve.comment[href="#"][data-status="comment"]')[0]
+                })
+            });
+        })
+        console.log('new buttons found')
+    }
+    findAllButtons();
+    function waitForChanges(element, callback) {
+
+        const observer = new MutationObserver((mutationsList, observer) => {
+            callback(mutationsList, observer);
+        });
+
+        const config = {
+            childList: true,
+            attributes: true,
+            characterData: true,
+            subtree: true
+        };
+
+        observer.observe(element, config);
+
+        return observer;
+    }
+
+
+
+    waitForChanges(docPanel, (mutationsList, observer) => {
+        findAllButtons()
+    });
+
+    function cancelDocComments() {
+        waitForElement('ui-id-' + uiId, (element) => {
+            const cancelDocComment = element.parentElement.parentElement.getElementsByTagName('textarea')[0];
+            const locale = document.getElementsByClassName('row-yazyk')[0].getElementsByTagName('td')[0].textContent.toUpperCase()
+            if (((phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Украина")) || playerCountry == 'UA') && !((phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Россия")) || playerCountry == 'RU')) {
                 autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsUA);
-                break;
-            case 'ES':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsES);
-                break;
-            case 'FR':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFR);
-                break;
-            case 'TR':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsTR);
-                break;
-            case 'PL':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPL);
-                break;
-            case 'KZ':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsKZ);
-                break;
-            case 'FI':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFIN);
-                break;
-            case 'DA':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDA);
-                break;
-            case 'NOR'||'NO'||'NR':
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsNOR);
-                break;
-            default:
-                console.log('what a  language?');
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN)
-                break;
+            } else switch (locale) {
+                case 'РУССКИЙ':
+                case 'RU':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocs);
+                    break;
+                case 'EN':;
+                case 'АНГЛИЙСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN);
+                    break;
+                case 'DE':
+                case 'НЕМЕЦКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDE);
+                    break;
+                case 'PT':
+                case 'ПОРТУГАЛЬСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPT);
+                    break;
+                case 'UA':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsUA);
+                    break;
+                case 'ES':
+                case 'ИСПАНСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsES);
+                    break;
+                case 'FR':
+                case 'ФРАНЦУЗСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFR);
+                    break;
+                case 'TR':
+                case 'ТУРЕЦКЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsTR);
+                    break;
+                case 'PL':
+                case 'ПОЛЬСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPL);
+                    break;
+                case 'KZ':
+                case 'КАЗАХСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsKZ);
+                    break;
+                case 'FI':
+                case 'ФИНСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFIN);
+                    break;
+                case 'DA':
+                case 'ДАТСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDA);
+                    break;
+                case 'NOR':
+                case 'NO':
+                case 'NR':
+                case 'НОРВЕЖСКИЙ':
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsNOR);
+                    break;
+                default:
+                    console.log('what a  language?');
+                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN)
+                    break;
+            }
+        });
+    }
+    function autocompleteDocComments(documentCommentTemplatesSet) {
+        if (documentCommentTemplatesSet){
+            waitForElement('ui-id-' + uiId, (element) => {
+                const docComment = element.parentElement.parentElement.getElementsByTagName('textarea')[0];
+                autocomplete(docComment, setOfLastPaymentOptions, setOfLastPaymentOptions);
+            });
+        }
+    }
+}
+const docPanel = document.evaluate("//h3[contains(., 'Документы')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext()?document.evaluate("//h3[contains(., 'Документы')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext():null
+function observeDivContentChange(divElement) {
+    const imageObserver = new MutationObserver((mutationsList, imageObserver) => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === 'childList' || mutation.type === 'characterData') {
+                //console.log('Content of the div has changed!');
+                const activeImageSrc = divElement.getElementsByTagName('img')[0]?divElement.getElementsByTagName('img')[0].src:null
+                const activeImageInDocPanel = docPanel.querySelectorAll('img[data-original="'+activeImageSrc+'"]')[0]
+                const activeComment = activeImageSrc?activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve.comment[href="#"][data-status="comment"]')[0]:null
+                commentForImageButton = activeComment;
+                console.log(commentForImageButton);
+            }
         }
     });
 
+    const config = { childList: true, characterData: true, subtree: true };
+
+    imageObserver.observe(divElement, config);
+
+    return imageObserver;
 }
+
+function editComments() {
+    function popup(url)
+    {
+        const width  = screen.width*0.2;
+        const height = screen.height*0.5;
+        const left   = screen.width - width - 50;
+        const top    = screen.height*0.15;
+        let params = 'width='+width+', height='+height;
+        params += ', top='+top+', left='+left;
+        params += ', directories=no';
+        params += ', location=no';
+        params += ', menubar=no';
+        params += ', resizable=yes';
+        params += ', scrollbars=yes';
+        params += ', status=yes';
+        params += ', toolbar=no';
+        let newWin=window.open(url,'editPlayerInfoPopup', params);
+        if (window.focus) {
+            newWin.focus()
+        }
+        return false;
+    }
+    let editUrl = window.location.href + '/edit'
+    let editButton = document.createElement('li')
+    let commentButton = document.createElement('li')
+    let editText = document.createElement('a')
+    let commentText = document.createElement('a')
+    let approveButton = document.createElement('li')
+    let notApproveButton = document.createElement('li')
+    let approveText = document.createElement('a')
+    let notApproveText = document.createElement('a')
+
+    editText.textContent = 'Правка'
+    commentText.textContent = 'Комментарий'
+    editButton.appendChild(editText)
+    commentButton.appendChild(commentText)
+    editButton.role = 'button';
+    editButton.className = 'viewer-edit-profile viewer-hide-md-down'
+    commentButton.role = 'button';
+    commentButton.className = 'viewer-comment-image viewer-hide-md-down'
+    approveText.textContent = 'Одобрено'
+    notApproveText.textContent = 'Не одобрено'
+    approveButton.appendChild(approveText)
+    notApproveButton.appendChild(notApproveText)
+    approveButton.role = 'button';
+    approveButton.className = 'viewer-approve-doc viewer-hide-md-down'
+    notApproveButton.role = 'button';
+    notApproveButton.className = 'viewer-not-approve-doc viewer-hide-md-down'
+
+
+    editButton.addEventListener("click", ()=>{
+        popup(editUrl)
+    })
+    commentButton.addEventListener("click", ()=>{
+        const leftMargin = screen.width*0.75
+        waitForElement('ui-id-' + (uiId+1), (commentSpan) => {
+            const commentForm = commentSpan.parentElement.parentElement
+            console.log(commentForm)
+            commentForm.style.zIndex = '3000'
+            commentForm.style.left = leftMargin.toString()+'px'
+        });
+        commentForImageButton.click()
+
+
+    })
+
+    waitForClass('.viewer-toolbar ul', (docToolsPanel) => {
+        docToolsPanel[0].append(editButton, commentButton)
+    })
+    waitForClass('.viewer-canvas', (observableImage) => {
+        const obsImg = observeDivContentChange(observableImage[0])
+        obsImg
+    })
+}
+

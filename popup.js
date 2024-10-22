@@ -85,11 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadValues() {
         chrome.storage.local.get(['roulette_custom', 'instant_custom', 'baccarat_custom']).then((result) =>{
-            if(result.roulette_custom && result.instant_custom && result.baccarat_custom){
                 document.getElementById('roulette_custom').value = result.roulette_custom || '';
                 document.getElementById('instant_custom').value = result.instant_custom || '';
                 document.getElementById('baccarat_custom').value = result.baccarat_custom || '';
-            }
         })
     }
 
