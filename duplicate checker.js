@@ -29,12 +29,22 @@ function injectDuplicatesBlock(){
         const duplicateLinkSet = [...new Set(hrefValues)];
 
 
-
+        let userEmail = document.getElementById('page_title').innerText.match(emailRegex)
         let commentsList = document.getElementById("active_admin_comments_for_user_"+userid)? document.getElementById("active_admin_comments_for_user_"+userid).querySelectorAll(".active_admin_comment"):'bebra';
         let commentsBlock = document.getElementById("active_admin_comments_for_user_"+userid);
         if(debugMode == 1){console.log(commentsList);}
-
+        let inactiveEmails = []
+        duplicatesBlock.querySelectorAll('a.disabled').forEach((email)=>{
+            inactiveEmails.push(email.textContent)
+        })
+        let inactiveEmailsSet = [...new Set(inactiveEmails)]
         let duplicatesEmails = [...new Set(duplicatesBlock.innerText.match(emailRegex))];
+        for(let i=0; i < duplicatesEmails.length; i++)
+        {
+            if (duplicatesEmails[i]==userEmail){
+                duplicatesEmails.splice(i, 1)
+            }
+        }
         if(debugMode == 1){console.log(duplicatesEmails);}
         if(debugMode == 1){console.log(commentsList);}
         if(duplicatesEmails.length == 0){return;} // если дублей нет - блок и не нужен
@@ -46,12 +56,13 @@ function injectDuplicatesBlock(){
                 let duplicateComment = 0;
                 let neededStyle = "";
                 let neededText = "";
-                if(commentsBlock.innerHTML.match(duplicatesEmails[i])){
+                if(commentsBlock.innerHTML.match(duplicatesEmails[i]) || duplicatesEmails[i].includes('+duplicate') || (inactiveEmailsSet.length > 0 && inactiveEmailsSet.includes(duplicatesEmails[i]))){
                     duplicateComment = 1;
                     neededStyle = "player-tag player-tag-verified";
                     neededText = "";
                     if(debugMode == 1){console.log(duplicatesEmails[i] + duplicateComment);}
                     commentsBlock.innerHTML = commentsBlock.innerHTML.replaceAll(duplicatesEmails[i], `<a style='color:green' href="${duplicateLinkSet[i]}">${duplicatesEmails[i]}</a>`);
+
                 }
                 else
                 {
@@ -201,7 +212,7 @@ function enhanceUserEvents(){
             "Внешние малые острова", "Гваделупа", "Гренландия", "Гуам", "Гуам", "Зимбабве", "Израиль", "Иордания", "Иран", "Ирак", "Испания", "Йемен",
             "ДР Конго", "Кипр", "КНДР", "Кот-д’Ивуар", "Китай", "Кюрасао", "Майотта", "Макао", "Мальта", "Нидерланды", "Объединенные Арабские Эмираты",
             "Оман", "Пакистан", "Ливан", "Пуэрто-Рико", "Ливия", "Сен-Мартен", "Мали", "Мьянма", "Никарагуа", "Реюньон", "Сомали",
-            "Сирия", "Словакия", "США", "Франция", "Швеция", "Эфиопия", "Соединенные Штаты Америки", "Судан", "Франция", "Французская Гвиана", "Центральноафриканская Республика"];
+            "Сирия", "Словакия", "США", "Франция", "Эфиопия", "Соединенные Штаты Америки", "Судан", "Франция", "Французская Гвиана", "Центральноафриканская Республика"];
         let forbiddenCountries = [
             "AS", // Американское Самоа (American Samoa)
             "AW", // Аруба

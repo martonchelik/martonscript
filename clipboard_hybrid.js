@@ -48,6 +48,110 @@ function waitForElement(selector, callback) {
         });
     };
 }
+let autoCheckTagSet
+chrome.storage.local.get('checkboxStates', function (result) {
+    autoCheckTagSet = result.checkboxStates.autoCheckTagSet
+    console.log(autoCheckTagSet)
+})
+
+let authToken = document.querySelector('meta[name="csrf-token"]').content
+
+function addSecondComment(){
+    let paymentId = window.location.href.replace(/\D/g, "");
+    fetch(window.location.href.split('payments/')[0] + "/comments", {
+        "headers": {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "cache-control": "max-age=0",
+            "content-type": "application/x-www-form-urlencoded",
+            "priority": "u=0, i",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1"
+        },
+        "referrer": window.location.href,
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": "authenticity_token="+ authToken +"&active_admin_comment%5Bresource_type%5D=Payment&active_admin_comment%5Bresource_id%5D="+ paymentId +"&active_admin_comment%5Bbody%5D=.&commit=%D0%94%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C+%D0%9A%D0%BE%D0%BC%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%80%D0%B8%D0%B9",
+        "method": "POST",
+        "mode": "cors",
+        "credentials": "include"
+    }).then();
+}
+
+
+async function addTagDontCashout(){
+    let userUrl = window.location.href.indexOf("players") == -1?document.getElementsByClassName('row-user')[0].getElementsByTagName('div')[0].getElementsByTagName('a')[0].href:null
+    let player_page = await fetch(userUrl, {
+        referrerPolicy: "strict-origin-when-cross-origin",
+        body: null,
+        method: "GET",
+        headers: {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "cache-control": "max-age=0",
+            "content-type": "application/x-www-form-urlencoded",
+            "priority": "u=0, i",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1"
+        },
+        mode: "cors",
+        credentials: "include"
+    });
+    const parser = new DOMParser()
+    if (player_page.ok) {
+        let playerText = await player_page.text();
+        const doc = parser.parseFromString(playerText, "text/html")
+        let currentTags = doc.getElementById("user_tags").getAttribute("data-payload")
+        console.log(currentTags)
+        let body = ''
+        if(!currentTags.includes('Не выводить')){
+            let tagsList = JSON.parse(currentTags);
+            console.log(tagsList)
+            tagsList.forEach((tag)=>{
+                if (body){
+                    body += '&payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
+                }else{
+                    body += 'payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
+                }
+            })
+            if (body){
+                body += '&payload%5B%5D=' + encodeURI("Не+выводить")
+            }else{
+                body += 'payload%5B%5D=' + encodeURI("Не+выводить")
+            }
+            console.log(body)
+            fetch(userUrl+"/update_tags", {
+                referrer: userUrl+"/update_tags",
+                referrerPolicy: "strict-origin-when-cross-origin",
+                body: body,
+                method: "PATCH",
+                headers: {
+                    "accept": "application/json, text/javascript, */*; q=0.01",
+                    "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "priority": "u=1, i",
+                    "sec-fetch-dest": "empty",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-site": "same-origin",
+                    "x-csrf-token": authToken,
+                    "x-requested-with": "XMLHttpRequest"
+                },
+                mode: "cors",
+                credentials: "include"
+            }).then()
+        }
+    } else {
+        alert("Ошибка HTTP: " + player_page.status);
+    }
+
+
+}
+
 
 function autocompleteCancel(inp, displayArr, inputArr) {
     if (inp) {
@@ -262,7 +366,47 @@ function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
 
             b.innerHTML += "<input type='hidden' value='" + inputValue + "'>";
             b.addEventListener("click", function (e) {
+                function popupCheck(url)
+                {
+                    const width  = screen.width*0.2;
+                    const height = screen.height*0.5;
+                    const left   = screen.width - width - 50;
+                    const top    = screen.height*0.15;
+                    let params = 'width='+width+', height='+height;
+                    params += ', top='+top+', left='+left;
+                    params += ', directories=no';
+                    params += ', location=no';
+                    params += ', menubar=no';
+                    params += ', resizable=no';
+                    params += ', scrollbars=yes';
+                    params += ', status=yes';
+                    params += ', toolbar=no';
+                    let newWin=window.open(url,'addCheckTagPopup', params);
+                    if (window.focus) {
+                        newWin.focus()
+                    }
+                    return false;
+                }
                 inp.value = this.getElementsByTagName("input")[0].value;
+                if (autoCheckTagSet){
+                    switch (inp.value) {
+                        case "В чеке инстант":
+                        case "В чеке купон":
+                        case "В чеке рулетка 2-3":
+                        case "В чеке отмыв денег тег (money_laundry)":
+                        case "В чеке блэкджек":
+                        case "В чеке крупный выигрыш":
+                        case "В чеке красная бонусная":
+                        case "В чеке рулетка 2-3 вб":
+                        case "В чеке рулетка вб":
+                            if (confirm('Поставить тег "Не выводить"?\n (Если он уже установлен, он не исчезнет)')) {
+                                addTagDontCashout();
+                            }
+                            break;
+                        default:
+                            console.log('Сегодня без тега, но впредь будьте осторожны')
+                    }
+                }
                 if (inp.value === "В чеке спорт"){
                     let checkMessage = userUrl + ' спорт, проверьте, пожалуйста'
                     navigator.clipboard.writeText(checkMessage).then(() =>{console.log(checkMessage)});
@@ -303,12 +447,12 @@ function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
                     navigator.clipboard.writeText(checkMessage).then(() =>{console.log(checkMessage)});
                     inp.value = 'В чеке'
                 }
-                if (inp.value === "В чеке money_laundry"){
+                if (inp.value === "В чеке отмыв денег тег (money_laundry)"){
                     let checkMessage = userUrl + ' money_laundry, проверьте, пожалуйста'
                     navigator.clipboard.writeText(checkMessage).then(() =>{console.log(checkMessage)});
                     inp.value = 'В чеке'
                 }
-                if (inp.value === "В чеке sport_suspect"){
+                if (inp.value === "В чеке спорт саспект (sport_suspect)"){
                     let checkMessage = userUrl + ' sport_suspect, проверьте, пожалуйста'
                     navigator.clipboard.writeText(checkMessage).then(() =>{console.log(checkMessage)});
                     inp.value = 'В чеке'
@@ -373,35 +517,11 @@ document.addEventListener('readystatechange', () => {
         });
         if (window.location.href.indexOf("payments/") != -1) {
             let paymentID = parseInt(window.location.href.split("/")[5]);
-
             cardMask =  document.getElementsByClassName('row-card_mask')[0]
                 ? document.getElementsByClassName('row-card_mask')[0].getElementsByTagName('td')[0].textContent : null
             paymentOptionsTable = document.getElementById('payment_option_sidebar_section')
             paymentVerified = paymentOptionsTable.innerHTML.includes('status_tag yes')
             paymentUsed =paymentOptionsTable.innerText.includes(cardMask)
-            chrome.storage.local.get(['doubleComm', 'paymentID', 'checkboxStates'], function(result) {
-                if (result.doubleComm && paymentID == result.paymentID) {
-                    chrome.storage.local.set({
-                        doubleComm: false
-                    }, function() {
-                        console.log('double comm off');
-                    });
-                    const commentTextArea = document.getElementById('active_admin_comment_body')
-                    const commentForm = document.getElementById('new_active_admin_comment');
-                    commentTextArea.value = '.'
-                    commentForm.submit()
-                    if(result.checkboxStates.autoCloseSet){
-                        window.close()
-                    }
-                }else{
-                    chrome.storage.local.set({
-                        doubleComm: false
-                    }, function() {
-                        console.log('double comm off');
-                    });
-                }
-            });
-
         }
 
     }
@@ -454,6 +574,9 @@ function waitForClass(selector, callback) {
 }*/
 
 let commentForImageButton
+let approveImageDoc
+let notApproveImageDoc
+let activeImageSrc = null
 let uiId = 16;
 
 function setupAutocomplete(documentCommentTemplatesSet) {
@@ -474,10 +597,10 @@ function setupAutocomplete(documentCommentTemplatesSet) {
     const comments = ["В чеке", "По лимиту", "После прохождения предыдущих", "Тест", "На согласовании в accounts-payments"
         , "Проверен", "Не отыгран депозит", "На согласовании","Провести позже, как заработает", "Позже или на карту", "Позже", "Позже или на карту / другую ПС"
         , "Позже или на другую ПС", "В чеке спорт", "В чеке инстант", "В чеке купон", "В чеке рулетка 2-3", "В чеке рулетка вб", "В чеке рулетка 2-3 вб", "В чеке блэкджек", "В чеке красная бонусная",
-        "В чеке крупный выигрыш", "В чеке money_laundry", "В чеке sport_suspect"];
+        "В чеке крупный выигрыш", "В чеке отмыв денег тег (money_laundry мани лондри) ", "В чеке спорт саспект (sport_suspect)"];
     const commentsForProfiles = ["Аккаунт заблокирован по п.п. 4.4", "Аккаунт заблокирован, т.к. игроку нет 18-ти лет", "Перед верификацией запросить местоположение",
         "Аккаунт заблокирован по п.п. 4.4 до возвращения в разрешённый регион", "Дубликат заблокирован. Основной - ", "Дубликат почта заблокирован",
-        "Данные в профиле изменены в соответствии с данными в документе.", "Данные скорректированы.", "Аккаунт заблокирован по причине: лудоман"];
+        "Данные в профиле изменены в соответствии с данными в документе.", "Данные скорректированы.", "Аккаунт заблокирован по причине: лудоман", "Номер телефона номер подтвержден селфи."];
     const cancelDocs = [
         "повторная загрузка документа не требуется",
         "не требуется",
@@ -898,7 +1021,7 @@ function setupAutocomplete(documentCommentTemplatesSet) {
     const cancels = ["На карту", "На МК", "На пиастрикс", "На мифинити", "Переоформить корректно", "На верифицированную карту", "На верифицированную карту или на другую иконку", "Обратная сторона id", "На карту или банковским переводом",
         "Документ с CPF", "На мифинити", "Дубликат", "По номеру телефона из профиля, почте или CPF", "На другую иконку", "Завершить бонусную ставку в игре ", "Завершить бонусные ставки в играх ",
         "На номер из профиля или скрин из ЛК", "Пластик", "Выписка по карте", "На карту или на другую иконку", "Верифицировать номер в профиле", "Верифицировать ", "документы владельца, потом запрет", "На крипту", "На скрилл",
-        "Верифицировать скрилл", "На бинанс"];
+        "Верифицировать скрилл", "На бинанс", "Селфи для подтверждения нового номера телефона"];
 
 
     let lastPayments = null
@@ -938,13 +1061,7 @@ function setupAutocomplete(documentCommentTemplatesSet) {
 
                 commentForm.addEventListener('submit', ()=>{
                     if (document.getElementById('double_checkbox').checked){
-                        let paymentID = parseInt(window.location.href.split("/")[5]);
-                        chrome.storage.local.set({
-                            doubleComm: true,
-                            paymentID: paymentID
-                        }, function() {
-                            console.log('double comm set');
-                        });
+                        addSecondComment();
                     }
                 })
             }
@@ -1001,8 +1118,13 @@ function setupAutocomplete(documentCommentTemplatesSet) {
             previews.forEach((preview) => {
                 preview.addEventListener('click', () => {
                     console.log("clickity click img")
-                    commentForImageButton = preview.parentElement.querySelectorAll('a.button.toggle-approve.comment-document')[0]
+                    console.log(preview.parentElement.querySelectorAll('a.button.toggle-approve.comment-document')[0]&&!preview.parentElement.classList.contains('document-removed'))
+                    commentForImageButton = preview.parentElement.querySelectorAll('a.button.toggle-approve.comment-document')[0]&&!preview.parentElement.classList.contains('document-removed')?preview.parentElement.querySelectorAll('a.button.toggle-approve.comment-document')[0]:null
+                    approveImageDoc = preview.parentElement.querySelectorAll('a.button.toggle-approve[href$="status=approved"')[0]&&!preview.parentElement.classList.contains('document-removed')?preview.parentElement.querySelectorAll('a.button.toggle-approve[href$="status=approved"')[0]:null
+                    notApproveImageDoc = preview.parentElement.querySelectorAll('a.button.toggle-approve.unapprove-document')[0]&&!preview.parentElement.classList.contains('document-removed')?preview.parentElement.querySelectorAll('a.button.toggle-approve.unapprove-document')[0]:null
                     console.log(commentForImageButton)
+                    console.log(approveImageDoc)
+                    console.log(notApproveImageDoc)
                 })
             });
         })
@@ -1034,72 +1156,35 @@ function setupAutocomplete(documentCommentTemplatesSet) {
     });
 
     function cancelDocComments() {
-        waitForElement('unapprove_document_sidebar_section', (element) => {
-            const cancelDocComment = element.getElementsByTagName('textarea')[0];
-            const locale = document.getElementsByClassName('row-yazyk')[0].getElementsByTagName('td')[0].textContent.toUpperCase()
-            if (((phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Украина")) || playerCountry == 'UA') && !((phone.split("Страна: ")[1] && phone.split("Страна: ")[1].includes("Россия")) || playerCountry == 'RU')) {
-                autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsUA);
-            } else switch (locale) {
-                case 'РУССКИЙ':
-                case 'RU':
+
+        const locale = document.getElementsByClassName('row-yazyk')[0].getElementsByTagName('td')[0].textContent.toUpperCase()
+        function setupDocCancel(cancelDocComment) {
+            switch (locale) {
+                case 'РУССКИЙ':case 'RU':
                     autocompleteCancel(cancelDocComment, cancelDocs, cancelDocs);
-                    break;
-                case 'EN':;
-                case 'АНГЛИЙСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN);
-                    break;
-                case 'DE':
-                case 'НЕМЕЦКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDE);
-                    break;
-                case 'PT':
-                case 'ПОРТУГАЛЬСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPT);
-                    break;
-                case 'UA':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsUA);
-                    break;
-                case 'ES':
-                case 'ИСПАНСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsES);
-                    break;
-                case 'FR':
-                case 'ФРАНЦУЗСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFR);
-                    break;
-                case 'TR':
-                case 'ТУРЕЦКЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsTR);
-                    break;
-                case 'PL':
-                case 'ПОЛЬСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPL);
-                    break;
-                case 'KZ':
-                case 'КАЗАХСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsKZ);
-                    break;
-                case 'FI':
-                case 'ФИНСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFIN);
-                    break;
-                case 'DA':
-                case 'ДАТСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDA);
-                    break;
-                case 'NOR':
-                case 'NO':
-                case 'NR':
-                case 'НОРВЕЖСКИЙ':
-                    autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsNOR);
-                    break;
-                default:
-                    console.log('what a  language?');
+                    break;case 'EN':;case 'АНГЛИЙСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN);
+                    break;case 'DE':case 'НЕМЕЦКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDE);
+                    break;case 'PT':case 'ПОРТУГАЛЬСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPT);
+                    break;case 'UA':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsUA);
+                    break;case 'ES':case 'ИСПАНСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsES);
+                    break;case 'FR':case 'ФРАНЦУЗСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFR);
+                    break;case 'TR':case 'ТУРЕЦКЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsTR);
+                    break;case 'PL':case 'ПОЛЬСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsPL);
+                    break;case 'KZ':case 'КАЗАХСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsKZ);
+                    break;case 'FI':case 'ФИНСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsFIN);
+                    break;case 'DA':case 'ДАТСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsDA);
+                    break;case 'NOR':case 'NO':case 'NR':case 'НОРВЕЖСКИЙ':autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsNOR);
+                    break;default:console.log('what a  language?');
                     autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN)
                     break;
             }
+        }
+        waitForElement('unapprove_document_sidebar_section', (element) => {
+            console.log('sosee')
+            const cancelDocComment = element.getElementsByTagName('textarea')[0];
+            setupDocCancel(cancelDocComment)
         });
-    }
+            }
     function autocompleteDocComments(documentCommentTemplatesSet) {
         if (documentCommentTemplatesSet){
             waitForElement('comment_document_sidebar_section', (element) => {
@@ -1109,19 +1194,46 @@ function setupAutocomplete(documentCommentTemplatesSet) {
         }
     }
 }
-function observeDivContentChange(divElement) {
+function observeDivContentChange(divElement, approveButton, notApproveButton, commentButton) {
     const docPanel = document.evaluate("//h3[contains(., 'Документы')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext()?document.evaluate("//h3[contains(., 'Документы')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext():null
     const imageObserver = new MutationObserver((mutationsList, imageObserver) => {
         for (let mutation of mutationsList) {
             if (mutation.type === 'childList' || mutation.type === 'characterData') {
                 //console.log('Content of the div has changed!');
-                const activeImageSrc = divElement.getElementsByTagName('img')[0]?divElement.getElementsByTagName('img')[0].src:null
-                console.log(docPanel)
+                activeImageSrc = divElement.getElementsByTagName('img')[0]?divElement.getElementsByTagName('img')[0].src:null
+                //console.log(docPanel)
                 const activeImageInDocPanel = docPanel.parentElement.querySelectorAll('img[data_original="'+activeImageSrc+'"]')[0]
-                console.log(activeImageSrc)
-                const activeComment = activeImageSrc?activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve.comment-document')[0]:null
-                commentForImageButton = activeComment;
-                console.log(commentForImageButton);
+                if (activeImageInDocPanel) {
+                    notRemoved = !activeImageInDocPanel.parentElement.parentElement.classList.contains('document-removed')
+                }
+                    console.log(activeImageInDocPanel)
+                if (activeImageSrc){
+                    const activeComment = activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve.comment-document')[0]&&notRemoved?activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve.comment-document')[0]:null
+                    const activeApprove = activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve[href$="status=approved"')[0]&&notRemoved?activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve[href$="status=approved"')[0]:null
+                    const activeNotApprove = activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve.unapprove-document')[0]&&notRemoved?activeImageInDocPanel.parentElement.parentElement.querySelectorAll('a.button.toggle-approve.unapprove-document')[0]:null
+                    if (!activeApprove){
+                        approveButton.classList.add('button-not-active')
+                    }else{
+                        approveButton.classList.remove('button-not-active')
+                    }
+                    if (!activeNotApprove){
+                        notApproveButton.classList.add('button-not-active')
+                    }else{
+                        notApproveButton.classList.remove('button-not-active')
+                    }
+                    if (!activeComment){
+                        commentButton.classList.add('button-not-active')
+                 ``   }else{
+                        commentButton.classList.remove('button-not-active')
+                    }
+                    approveImageDoc = activeApprove;
+                    notApproveImageDoc = activeNotApprove;
+                    commentForImageButton = activeComment;
+
+                }
+                console.log(commentForImageButton, commentButton)
+                console.log(approveImageDoc, approveButton)
+                console.log(notApproveImageDoc, notApproveButton)
             }
         }
     });
@@ -1134,6 +1246,7 @@ function observeDivContentChange(divElement) {
 }
 
 function editComments() {
+    const docPanel = document.evaluate("//h3[contains(., 'Документы')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext()?document.evaluate("//h3[contains(., 'Документы')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext():null
     function popup(url)
     {
         const width  = screen.width*0.2;
@@ -1171,39 +1284,88 @@ function editComments() {
     commentButton.appendChild(commentText)
     editButton.role = 'button';
     editButton.className = 'viewer-edit-profile viewer-hide-md-down'
+    editButton.title = 'Alt + Z'
     commentButton.role = 'button';
     commentButton.className = 'viewer-comment-image viewer-hide-md-down'
+    commentButton.title = 'Alt + X'
     approveText.textContent = 'Одобрено'
     notApproveText.textContent = 'Не одобрено'
     approveButton.appendChild(approveText)
     notApproveButton.appendChild(notApproveText)
     approveButton.role = 'button';
     approveButton.className = 'viewer-approve-doc viewer-hide-md-down'
+    approveButton.title = 'Alt + C'
     notApproveButton.role = 'button';
     notApproveButton.className = 'viewer-not-approve-doc viewer-hide-md-down'
+    notApproveButton.title = 'Alt + V'
 
 
     editButton.addEventListener("click", ()=>{
         popup(editUrl)
     })
-    commentButton.addEventListener("click", ()=>{
-        const leftMargin = screen.width*0.75
-        waitForElement('comment_document_sidebar_section', (commentForm) => {
-            let commentFormContainer = commentForm.parentElement
-            console.log(commentFormContainer)
-            commentFormContainer.style.zIndex = '3000'
-            commentFormContainer.style.left = leftMargin.toString()+'px'
-        });
-        commentForImageButton.click()
-
-
+    approveButton.addEventListener("click", ()=>{
+        if (!approveButton.classList.contains('button-not-active')){
+            approveImageDoc.click()
+        }
     })
+    notApproveButton.addEventListener("click", ()=>{
+        if (!notApproveButton.classList.contains('button-not-active')) {
+            document.getElementsByClassName('viewer-canvas')[0].click()
+            notApproveImageDoc.click()
+        }
+    })
+    commentButton.addEventListener("click", ()=>{
+        if (!commentButton.classList.contains('button-not-active')) {
+            const leftMargin = screen.width * 0.75
+            waitForElement('comment_document_sidebar_section', (commentForm) => {
+                let commentFormContainer = commentForm.parentElement
+                //console.log(commentFormContainer)
+                commentFormContainer.style.zIndex = '3000'
+                commentFormContainer.style.left = leftMargin.toString() + 'px'
+            });
+            commentForImageButton.click()
+        }
+    })
+    document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.code == 'KeyZ') {
+            console.log('Alt + Z pressed');
+            popup(editUrl)
+        }
+    });
+    document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.code == 'KeyX' && !commentButton.classList.contains('button-not-active') && activeImageSrc) {
+            console.log('Alt + X pressed');
+            commentButton.click()
+        }
+    });
+    document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.code == 'KeyC' && !approveButton.classList.contains('button-not-active') && activeImageSrc) {
+            console.log('Alt + C pressed');
+            approveButton.click()
+
+        }
+    });
+    document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.code == 'KeyV' && !notApproveButton.classList.contains('button-not-active') && activeImageSrc) {
+            console.log('Alt + V pressed');
+            notApproveButton.click()
+        }
+    });
 
     waitForClass('.viewer-toolbar ul', (docToolsPanel) => {
-        docToolsPanel[0].append(editButton, commentButton)
+        docToolsPanel[0].append(editButton, commentButton, approveButton, notApproveButton)
+        if (!commentForImageButton){
+            commentButton.classList.add('button-not-active')
+        }
+        if (!approveImageDoc){
+            approveButton.classList.add('button-not-active')
+        }
+        if (!notApproveImageDoc){
+            notApproveButton.classList.add('button-not-active')
+        }
     })
     waitForClass('.viewer-canvas', (observableImage) => {
-        const obsImg = observeDivContentChange(observableImage[0])
+        const obsImg = observeDivContentChange(observableImage[0], approveButton, notApproveButton, commentButton)
     })
 }
 

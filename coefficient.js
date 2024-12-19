@@ -74,7 +74,7 @@ document.addEventListener('readystatechange', () => {
             coefficientSpan.className = 'status_tag';
             coefficientSpan.style.color = 'black';
             coefficientSpan.style.fontSize = '1em';
-            coefficientSpan.textContent = coefficient;
+            coefficientSpan.textContent = String(coefficient);
             switch (checkGame(rows[i].childNodes[3].textContent)) {
                 case 'instant':
                     if (coefficient <= 1.4 && coefficient >= 1){
@@ -84,7 +84,7 @@ document.addEventListener('readystatechange', () => {
                     }
                     break;
                 case 'roulette':
-                    if (coefficient == 2 || coefficient == 3){
+                    if (coefficient == 2 || coefficient == 3 || coefficient == 4){
                         coefficientSpan.classList.add('red');
                     } else if ((coefficient <= 1.3 && coefficient >= 1) || BBSS <= 1.1){
                         coefficientSpan.classList.add('warn');

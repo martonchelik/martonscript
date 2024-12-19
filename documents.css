@@ -14,3 +14,95 @@
     margin-left: 0;
     margin-top: 0;
 }
+
+#multicancel_sidebar_section .panel_contents {
+    display: inline-block;
+    width: 600px;
+    padding: 0px !important;
+    margin: 3px 15px 15px 15px;;
+}
+
+#multicancel_sidebar_section .container {
+    margin-bottom: 20px;
+}
+
+#multicancel_sidebar_section .panel_contents .container {
+    display: inline-block;
+    width: 600px
+}
+
+#multicancel_sidebar_section .panel_contents .col-left {
+    display: inline-block;
+    vertical-align: top;
+    width: 45%;
+    float: left
+}
+
+#multicancel_sidebar_section .panel_contents .col-right {
+    display: inline-block;
+    vertical-align: top;
+    width: 55%;
+    float: right
+}
+
+#multicancel_sidebar_section .panel_contents .col-right .locale {
+    background: #80808063;
+    border-style: groove
+}
+
+#multicancel_sidebar_section .panel_contents .boolean>label {
+    display: flex
+}
+
+#multicancel_sidebar_section .panel_contents .boolean>label input {
+    margin-right: 5px
+}
+
+#multicancel_sidebar_section .panel_contents .hidden {
+    display: none
+}
+
+#waiting_docs{
+    height: 290px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+#waiting_docs > div {
+    height: 150px;
+    display: flex;
+    flex-basis: calc(58% - 40px);
+    justify-content: center;
+    flex-direction: column;
+    padding-bottom: 10px;
+}
+
+#waiting_docs > div> td > img{
+    width: 100% !important;
+    box-shadow: 0 0 5px rgba(0,0,0,.6)
+}
+
+#waiting_docs > div> td > a{
+    width: 100% !important;
+}
+#waiting_docs > div> td{
+    height: 132px !important;
+}
+
+#waiting_docs input{
+    zoom: 2;
+}
+
+#waiting_docs .permalink{
+    display: none;
+}
+#disabled_button{
+    color: grey;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+#disabled_button:active{
+    color: grey;
+    opacity: 0.5;
+    cursor: not-allowed;
+}

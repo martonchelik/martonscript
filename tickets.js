@@ -1,6 +1,9 @@
 document.addEventListener('readystatechange', () => {
     if (document.readyState === 'complete') {
         chrome.storage.local.get('checkboxStates', function(result) {
+            function filter(input) {
+                return input.replace(/[^\d.]/g, '');
+            }
             if(result.checkboxStates.ticketSet){
                 let paymentAction = document.getElementsByClassName('row-action')[0].getElementsByTagName('td')[0].textContent
                 let userEmailRow = document.getElementsByClassName('row-user')[0].getElementsByTagName('div')[0]
@@ -9,30 +12,37 @@ document.addEventListener('readystatechange', () => {
                 let externalKey = document.getElementsByClassName('row-external_id')[0].getElementsByTagName('td')[0].textContent
                 let paymentKey = document.getElementsByClassName('row-source_id')[0].getElementsByTagName('td')[0].textContent
                 let paymentSystem = document.getElementsByClassName('row-payment_system')[0].getElementsByTagName('td')[0].textContent
-                const externalPaySys = ["Black Rabbit", "Platcore", "Expay", "Aifory", "Cypix", "Accentpay", "Sgate", "TranZex", "Gogetaway"];
-                let ticketClip
+                let amount = parseInt(filter(document.getElementsByClassName('row-amount')[0].getElementsByTagName('td')[0].textContent))
+                const externalPaySys = ["Black Rabbit", "Platcore", "Expay", "Cypix", "Accentpay", "Sgate", "TranZex", "Gogetaway", "TranzexPay", "Paygames"];
+                const externalPaySysDep = ["Cypix payout EUR Mastercard/Visa - Bank Card", "Betatransfer SBP Out - Sbp ", "Expay Out RUB - Bank Card", "Forta out cash - Bank Card", "Accent new out - Bank Card", 'Black Rabbit']
+                let ticketClip = ""
 
                 if (paymentAction == "Депозит" || paymentAction == "Deposit"){
                     if(externalPaySys.some(payments=> paymentSystem.includes(payments))){
                         ticketClip = externalKey + " "
-                    }else{
+                    }else {
                         ticketClip = paymentKey + " "
+                    }
+
+                    ticketClip += projectName + " " + paymentID
+                    if(paymentSystem.includes("Forta")){
+                        ticketClip = "@ArbitrageC2CBot\n" + externalKey + "\n" + amount
+
+                    }else if(paymentSystem.includes("Star2Pay")){
+                        ticketClip = "Проверьте сделку\n id: " + externalKey + "\n @Star2HelperBot"
                     }
                 }else if (paymentAction == "Выплата" || paymentAction == "Cashout"){
-                    if(paymentKey.toLowerCase().includes('пусто')){
+                    if(externalPaySysDep.some(payments=> paymentSystem.includes(payments))){
                         ticketClip = externalKey + " "
+                    }else if (paymentKey.toLowerCase() == "пусто") {
                     }else{
                         ticketClip = paymentKey + " "
                     }
+                    ticketClip += projectName + " " + paymentID
+                    if(paymentSystem.includes("Star2Pay")) {
+                        ticketClip = "Не поступила выплата\n id: " + externalKey + "\n @PIQ_Support"
+                    }
                 }
-                console.log(paymentAction)
-
-                ticketClip += projectName + " " + paymentID
-
-                if(paymentSystem.includes("Star2Pay")){
-                    ticketClip = "Проверьте сделку\n id: " + externalKey + "\n @Star2HelperBot"
-                }
-
                 userEmailRow.innerHTML +=`<div><button id="ticketInfoButton">`+ "Скопировать инфо по платежу" +`</button></div>`
                 document.getElementById("ticketInfoButton").addEventListener('click', ()=>{
                     navigator.clipboard.writeText(ticketClip).then(() =>{console.log(ticketClip)});

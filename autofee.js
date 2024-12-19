@@ -56,8 +56,12 @@ document.addEventListener('readystatechange', () => {
             }
         });
         if (window.location.href.indexOf("payments/") != -1) {
-            const IBAN = document.getElementsByClassName('row-bank_transfer')[0]
+            let IBAN = document.getElementsByClassName('row-bank_transfer')[0]
                 ? document.getElementsByClassName('row-bank_transfer')[0].getElementsByTagName('td')[0].textContent : null
+            if (!IBAN){
+                IBAN = document.getElementsByClassName('row-bank_bill')[0]
+                    ? document.getElementsByClassName('row-bank_bill')[0].getElementsByTagName('td')[0].textContent : null
+            }
             const bannedIBANS = [
                 "IE08PFSR99107016633568",
                 "IE13PFSR99107016636000",
@@ -83,7 +87,7 @@ document.addEventListener('readystatechange', () => {
 
 
             let wagerPlayedSide = null;
-            if (document.getElementById("deposit_turnover_sidebar_section") != undefined) {
+            if (document.getElementById("deposit_turnover_sidebar_section").getElementsByTagName("a")[0] != undefined) {
                 wagerPlayedSide = document.getElementById("deposit_turnover_sidebar_section").getElementsByTagName("a")[0].getElementsByTagName('span')[0] === undefined ?
                     document.getElementById("deposit_turnover_sidebar_section").getElementsByTagName("a")[0] :
                     document.getElementById("deposit_turnover_sidebar_section").getElementsByTagName("a")[0].getElementsByTagName('span')[0];
@@ -94,7 +98,9 @@ document.addEventListener('readystatechange', () => {
             const feeAgreement = document.getElementsByClassName("row-cashout_fee_agreement")[0] ? 1 : null
 
             let isOk = -10;
-            if (!wagerPlayedSide.classList.contains('green') && wagerPlayedMain.classList.contains("red") && feeAgreement != null) {
+            if(!wagerPlayedSide){
+                isOk = 0
+            } else if (!wagerPlayedSide.classList.contains('green') && wagerPlayedMain.classList.contains("red") && feeAgreement != null) {
                 isOk = 1
             } else if (!wagerPlayedSide.classList.contains('green') && wagerPlayedMain.classList.contains("red") && feeAgreement == null) {
                 isOk = -1
@@ -150,15 +156,17 @@ document.addEventListener('readystatechange', () => {
                     });
 
                     if(unverifiedPaymentsSet){
+                        const sbp =  document.getElementsByClassName('row-sbp')[0]
+                            ? document.getElementsByClassName('row-sbp')[0].getElementsByTagName('td')[0].textContent.split(',')[0] : null
                         const cardMask =  document.getElementsByClassName('row-card_mask')[0]
                             ? document.getElementsByClassName('row-card_mask')[0].getElementsByTagName('td')[0].textContent : null
                         const cryptoWallet =  document.getElementsByClassName('row-crypto')[0]
                             ? document.getElementsByClassName('row-crypto')[0].getElementsByTagName('td')[0].textContent : null
                         const paymentOptionsTable = document.getElementById('payment_option_sidebar_section')
                         const paymentVerified = paymentOptionsTable.innerHTML.includes('status_tag yes')
-                        const paymentUsed = paymentOptionsTable.innerText.includes(IBAN) || paymentOptionsTable.innerText.includes(cardMask) || paymentOptionsTable.innerText.includes(cryptoWallet)
+                        const paymentUsed = paymentOptionsTable.innerText.includes(IBAN) || paymentOptionsTable.innerText.includes(cardMask) || paymentOptionsTable.innerText.includes(cryptoWallet) || paymentOptionsTable.innerText.includes(sbp)
 
-
+                        let sbpPaste = 0
                         let cardMaskPaste = 0
                         let IBANPaste = 0
                         let cryptoWalletPaste = 0
@@ -180,6 +188,12 @@ document.addEventListener('readystatechange', () => {
                                 console.log('not used or verified')
                                 document.getElementById('payment_wallet_mask').value = cryptoWallet;
                                 cryptoWalletPaste = 1
+                            }
+                        })
+                        waitForElement('payment_SBP_number', (element) =>{
+                            if(element.click && (!paymentVerified||!paymentUsed)){
+                                document.getElementById('payment_phone_number').value = sbp;
+                                sbpPaste = 1
                             }
                         })
                     }

@@ -1,3 +1,9 @@
+.button-not-active{
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    text-shadow: 1px 1px red;
+    cursor: not-allowed !important;
+}
+
 .viewer-edit-profile{
     width: 5rem !important;
     border-radius: 12px !important;
@@ -21,3 +27,31 @@
     color: white;
     text-decoration: none;
 }
+
+.viewer-approve-doc{
+    width: 6rem !important;
+    border-radius: 12px !important;
+    list-style-type: none !important;
+}
+
+.viewer-approve-doc a{
+    font-size: 1rem !important;
+    line-height: 1.15 !important;
+    color: white;
+    text-decoration: none;
+}
+
+.viewer-not-approve-doc{
+    width: 8rem !important;
+    border-radius: 12px !important;
+    list-style-type: none !important;
+}
+
+.viewer-not-approve-doc a{
+    font-size: 1rem !important;
+    line-height: 1.15 !important;
+    color: white;
+    text-decoration: none;
+}
+
+
