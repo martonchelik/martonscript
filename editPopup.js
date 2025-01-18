@@ -43,7 +43,23 @@ document.addEventListener('readystatechange', () => {
                     window.close()
                 }
             }
-            console.log(window.location.href.split('players/')[1].split('/edit')[0])
+            //console.log(window.location.href.split('players/')[1].split('/edit')[0])
+            let playerCountry = document.getElementById('user_profile_attributes_country').value
+            if (playerCountry == 'UA'){
+                let month = document.querySelectorAll('#user_profile_attributes_date_of_birth_2i option')
+                month[1].textContent += '/січня'
+                month[2].textContent += '/лютого'
+                month[3].textContent += '/березня'
+                month[4].textContent += '/квітня'
+                month[5].textContent += '/травня'
+                month[6].textContent += '/червня'
+                month[7].textContent += '/липня'
+                month[8].textContent += '/серпня'
+                month[9].textContent += '/вересня'
+                month[10].textContent += '/жовтня'
+                month[11].textContent += '/листопада'
+                month[12].textContent += '/грудня'
+            }
             let autocommentCheck = document.createElement('input')
             let acConainer = document.createElement('li')
             let acLabel = document.createElement('label')

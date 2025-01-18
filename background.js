@@ -3,7 +3,7 @@
 
 
 chrome.runtime.onInstalled.addListener(async () => {
-    chrome.storage.local.get(['roulette_custom', 'instant_custom', 'baccarat_custom'], function(result) {
+    chrome.storage.local.get(['roulette_custom', 'instant_custom', 'baccarat_custom', 'exPaySysCashOut', 'exPaySysDep'], function(result) {
         const roulette_custom = result.roulette_custom;
         const instant_custom = result.instant_custom;
         const baccarat_custom = result.baccarat_custom;
@@ -16,6 +16,20 @@ chrome.runtime.onInstalled.addListener(async () => {
                 roulette_custom: rouletteCustom,
                 instant_custom: instantCustom,
                 baccarat_custom: baccaratCustom
+            }, function() {
+                console.log('Values saved');
+            });
+        }
+        if(!result.exPaySysCashOut){
+            chrome.storage.local.set({
+                exPaySysCashOut: "Black Rabbit, Platcore, Expay, Cypix, Accentpay, Sgate, TranZex, Gogetaway, TranzexPay, Paygames, Paycos"
+            }, function() {
+                console.log('Values saved');
+            });
+        }
+        if(!result.exPaySysDep){
+            chrome.storage.local.set({
+                exPaySysDep: "Cypix payout EUR Mastercard/Visa - Bank Card, Betatransfer SBP Out - Sbp, Expay Out RUB - Bank Card, Forta out cash - Bank Card, Accent new out - Bank Card, Black Rabbit"
             }, function() {
                 console.log('Values saved');
             });

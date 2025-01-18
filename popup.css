@@ -1,5 +1,5 @@
 body{
-    height: 520px;
+    height: 570px;
     width: 320px;
     background-color: #2b2b2b;
     color: white;
@@ -19,7 +19,7 @@ body{
     display: none;
 }
 
-#addGames, #profile, #payments{
+#addGames, #profile, #payments, #addPaySys{
     height: 100%;
     width: calc(100% - 16px);
     position: absolute;

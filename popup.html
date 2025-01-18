@@ -26,6 +26,23 @@
         <textarea id='baccarat_custom' style="display: none"></textarea>
     </div>
 </div>
+<div id="addPaySys" class="hidden">
+    <h3>
+        Добавить платежные системы:
+        <div class="tooltip">
+            <i class="fa fa-info-circle"></i>
+            <span class="tooltiptext">Позволяет дополнить список платежных систем, для которых берется внешний платежный комп. Писать через запятую в поля ниже.
+            </span>
+        </div>
+        <button class= "close-button" id="closePaySysMenu">X</button>
+    </h3>
+    <div class="textInput">
+        <label class="aliasLabel" for="exPaySysCashOut">Выплаты</label>
+        <textarea id='exPaySysCashOut'></textarea>
+        <label class="aliasLabel" for="exPaySysDep">Депозиты</label>
+        <textarea id='exPaySysDep'></textarea>
+    </div>
+</div>
 
 
 
@@ -199,9 +216,20 @@
             <span class="slider round"></span>
         </label>
     </div>
+    <div class="setLine">
+        <span>
+            Защита верификации
+            <div class="tooltip">
+                <i class="fa fa-info-circle"></i>
+                <span class="tooltiptext top">Проверяет, верифицрован ли номер телефона и регион номера. Если не верифицирован и регион СНГ - отключает кнопку верификации</span>
+            </div>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="verifyBlockSet">
+            <span class="slider round"></span>
+        </label>
+    </div>
 </div>
-
-
 
 <div id="payments" class="hidden">
     <h3>
@@ -426,6 +454,7 @@
             <span class="tooltiptext right">При нажатии на кнопку рядом с почтой игрока копирует информацию по депозиту для тикета
             </span>
         </div>
+        <button id="togglePaySysSettings">Добавить ПС</button>
     </span>
     <label class="switch">
         <input type="checkbox" id="ticketSet">

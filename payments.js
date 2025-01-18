@@ -5,7 +5,9 @@ document.addEventListener('readystatechange', () => {
             console.log(window.location.href.includes('user_email'))
 
             if(result.checkboxStates.checkPSSet && window.location.href.includes('user_email')){
-                checkPaymentSystem();
+                window.navigation.addEventListener("navigate", (event) => {
+                    checkPaymentSystem();
+                })
             }
         })
     }

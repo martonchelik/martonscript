@@ -42,11 +42,4 @@ function copyTicketInfo(streamerCommSet) {
             }
         })
     }
-
-
-
-
-
-
-
 }

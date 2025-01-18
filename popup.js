@@ -2,20 +2,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     const toggleCoefficientSettings = document.getElementById('toggleCoefficientSettings');
     const addGames = document.getElementById('addGames');
+    const addPaySys = document.getElementById('addPaySys');
     const profile = document.getElementById('profile');
     const payments = document.getElementById('payments');
     const closeAddGamesMenu = document.getElementById('closeAddGamesMenu');
     const togglePaymentSettings = document.getElementById('togglePaymentSettings')
     const toggleProfileSettings = document.getElementById('toggleProfileSettings')
+    const togglePaySysSettings = document.getElementById('togglePaySysSettings')
     const closePaymentMenu = document.getElementById('closePaymentMenu')
     const closeProfileMenu = document.getElementById('closeProfileMenu')
+    const closePaySysMenu = document.getElementById('closePaySysMenu')
 
     toggleCoefficientSettings.addEventListener("click", () =>{addGames.classList.toggle('hidden'); scrollbarsHandler()})
     togglePaymentSettings.addEventListener("click", () =>{payments.classList.toggle('hidden')})
     toggleProfileSettings.addEventListener("click", () =>{profile.classList.toggle('hidden')})
+    togglePaySysSettings.addEventListener("click", () =>{addPaySys.classList.toggle('hidden')})
     closeAddGamesMenu.addEventListener("click", () =>{addGames.classList.toggle('hidden')})
     closePaymentMenu.addEventListener("click", () =>{payments.classList.toggle('hidden')})
     closeProfileMenu.addEventListener("click", () =>{profile.classList.toggle('hidden')})
+    closePaySysMenu.addEventListener("click", () =>{addPaySys.classList.toggle('hidden')})
 
     function scrollbarsHandler() {
         const rouletteTextarea = document.getElementById('roulette_custom')
@@ -73,27 +78,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const rouletteCustom = document.getElementById('roulette_custom').value;
         const instantCustom = document.getElementById('instant_custom').value;
         const baccaratCustom = document.getElementById('baccarat_custom').value;
-
+        const exPaySysCashOut = document.getElementById('exPaySysCashOut').value;
+        const exPaySysDep = document.getElementById('exPaySysDep').value;
+        console.log(exPaySysCashOut.split(','))
         chrome.storage.local.set({
             roulette_custom: rouletteCustom,
             instant_custom: instantCustom,
-            baccarat_custom: baccaratCustom
+            baccarat_custom: baccaratCustom,
+            exPaySysCashOut: exPaySysCashOut,
+            exPaySysDep: exPaySysDep
         }, function() {
             console.log('Values saved');
         });
     }
 
     function loadValues() {
-        chrome.storage.local.get(['roulette_custom', 'instant_custom', 'baccarat_custom']).then((result) =>{
+        chrome.storage.local.get(['roulette_custom', 'instant_custom', 'baccarat_custom', 'exPaySysCashOut', 'exPaySysDep']).then((result) =>{
                 document.getElementById('roulette_custom').value = result.roulette_custom || '';
                 document.getElementById('instant_custom').value = result.instant_custom || '';
                 document.getElementById('baccarat_custom').value = result.baccarat_custom || '';
+                document.getElementById('exPaySysCashOut').value = result.exPaySysCashOut || '';
+                document.getElementById('exPaySysDep').value = result.exPaySysDep || '';
         })
     }
 
     document.getElementById('roulette_custom').addEventListener('change',saveValues);
     document.getElementById('instant_custom').addEventListener('change',saveValues);
     document.getElementById('baccarat_custom').addEventListener('change',saveValues);
+    document.getElementById('exPaySysCashOut').addEventListener('change',saveValues);
+    document.getElementById('exPaySysDep').addEventListener('change',saveValues);
     document.getElementById('roulette_custom').addEventListener('keydown',()=>{scrollbarsChangeHandler(document.getElementById('roulette_custom'))});
     document.getElementById('instant_custom').addEventListener('keydown',()=>{scrollbarsChangeHandler(document.getElementById('instant_custom'))});
     document.getElementById('baccarat_custom').addEventListener('keydown',()=>{scrollbarsChangeHandler(document.getElementById('baccarat_custom'))});

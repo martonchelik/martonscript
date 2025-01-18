@@ -3,13 +3,50 @@ document.addEventListener('readystatechange', () => {
         chrome.storage.local.get('checkboxStates', function(result) {
             if (result.checkboxStates.profileSet) {
                 if(result.checkboxStates.cardsSet) cardCheck();
-                if(result.checkboxStates.documentsSet) displayDocs(result.checkboxStates.askedTagSet, result.checkboxStates.imgInfoSet);
+                if(result.checkboxStates.documentsSet) displayDocs(result.checkboxStates.askedTagSet, result.checkboxStates.imgInfoSet, result.checkboxStates.verifyBlockSet);
                 if(result.checkboxStates.betsDublicateSet) betsDublicate();
             }
 
         });
     }
 });
+
+function discardAskedTags(){
+    let userUrl = window.location.href.split('#')[0]
+    let currentTags = document.getElementById("user_tags").getAttribute("data-payload")
+    let body = ''
+    if(currentTags.includes('asked for')) {
+        let tagsList = JSON.parse(currentTags);
+        tagsList.forEach((tag) => {
+            if (tag != 'asked for docs' && tag != 'asked for selfie') {
+                if (body){
+                    body += '&payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
+                }else{
+                    body += 'payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
+                }
+            }
+        })
+        fetch(userUrl + "/update_tags", {
+            referrer: userUrl + "/update_tags",
+            referrerPolicy: "strict-origin-when-cross-origin",
+            body: body,
+            method: "PATCH",
+            headers: {
+                "accept": "application/json, text/javascript, */*; q=0.01",
+                "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "priority": "u=1, i",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+                "x-csrf-token": authToken,
+                "x-requested-with": "XMLHttpRequest"
+            },
+            mode: "cors",
+            credentials: "include"
+        }).then()
+    }
+}
 
 const cancelDocs = [
     "повторная загрузка документа не требуется",
@@ -428,6 +465,26 @@ const cancelDocsNOR =[
     ""
 ]
 
+function checkDocuments(waitingDocs){
+    let previewImages = document.querySelectorAll('#document_panel tr:not(.document-pending) > td.preview img');
+    let uniquePreviews = new Set();
+    previewImages.forEach((preview)=>{
+        console.log(preview.size)
+        const uniqueLengthBefore = uniquePreviews.size
+        console.log(preview.src.split('thumb/')[1].split('?')[0])
+        uniquePreviews.add(preview.src.split('thumb/')[1].split('?')[0])
+        if (uniqueLengthBefore == uniquePreviews.size){
+            let duplicateSign = document.createElement('span')
+            let breakPar = document.createElement('br')
+            duplicateSign.classList.add('status_tag')
+            duplicateSign.classList.add('red')
+            duplicateSign.textContent = 'Загружен повторно'
+            preview.parentElement.parentElement.querySelector('.kind').appendChild(breakPar)
+            preview.parentElement.parentElement.querySelector('.kind').appendChild(duplicateSign)
+        }
+    })
+}
+
 function waitForClass(selector, callback) {
     const observer = new MutationObserver((mutations, obs) => {
         const elements = document.querySelectorAll(selector);
@@ -591,7 +648,6 @@ function addMultiCancelForm(language, waitingDocs){
     
     <h3>Unapprove Documents</h3>
     <div class="panel_contents"><form novalidate="novalidate" class="formtastic document" accept-charset="UTF-8" id="multicancel_form"><input type="hidden" name="authenticity_token" value="" autocomplete="off">
-    </li>
         <div class="container">
             <div class="col-left">
                 <li class="boolean input optional" id="document_unapprove_with_comment_input"><input type="hidden" name="document[multi_unapprove_with_comment]" value="0" autocomplete="off"><label for="document_unapprove_with_comment_multi" class=""><input type="checkbox" name="document[multi_unapprove_with_comment]" id="document_unapprove_with_comment_multi" value="1" class="reason-checkbox" checked="checked">Отклонить с комментарием</label>
@@ -644,6 +700,13 @@ function addMultiCancelForm(language, waitingDocs){
                     <div class="image_select"></div>
                     <div class="image_select"></div>
                 </div>
+                <li class="boolean">
+                    <label for="multi_select_all">
+                        <input type="checkbox" id="multi_select_all" class="send-checkbox">
+                        Выбрать все
+                    </label>
+                </li>
+                
             </div>
         </div>
         <div class="container">
@@ -667,6 +730,24 @@ function addMultiCancelForm(language, waitingDocs){
     </div>
 </div></div>    
     `
+    // multiCancelForm.querySelector('#addForm').addEventListener('click', function() {
+    //     const formsContainer = multiCancelForm.querySelector('#multicancel_sidebar_section table tbody');
+    //     console.log(formsContainer)
+    //     const lastForm = formsContainer.querySelector('.panel_contents:last-of-type');
+    //
+    //     const newForm = lastForm.cloneNode(true);
+    //     const inputs = newForm.querySelectorAll('input, textarea');
+    //     inputs.forEach(input => {
+    //         if (input.type === 'checkbox') {
+    //             input.checked = false;
+    //         } else {
+    //             input.value = '';
+    //         }
+    //     });
+    //
+    //     formsContainer.appendChild(newForm);
+    // });
+    const selectAllDocs = multiCancelForm.querySelector('#multi_select_all')
     const dialogUI = multiCancelForm.querySelector('#multicancel_form_dialog')
     dialogUI.style.top = screen.height * 0.23 + 'px'
     dialogUI.style.left = (screen.width/2 - 330) + 'px'
@@ -697,7 +778,6 @@ function addMultiCancelForm(language, waitingDocs){
     document_comment.addEventListener('change',()=>{
         updateSubmitButtonState()
     })
-
     let checkboxes = multiCancelForm.querySelectorAll('#multicancel_form .reason-checkbox');
     checkboxes.forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
@@ -736,13 +816,29 @@ function addMultiCancelForm(language, waitingDocs){
             currentPreview.appendChild(createCheckBox(wdArray[i].querySelector('a.update-document').href.split('id=')[1]))
             currentPreview.querySelector('img')?currentPreview.querySelector('img').addEventListener('click', ()=>{
                 wdArray[i].querySelector('.preview img').click()
-            }):console.log('bebra')
+            }):console.log('')
         }
     }
     document.addEventListener('keydown',(event)=>{
         if(event.key == 'Escape'){
             if (document.getElementById('multicancel_form_dialog').style.display != 'none') document.getElementById('multicancel_form_close').click()
         }
+    })
+    selectAllDocs.addEventListener('change',()=>{
+        if(selectAllDocs.checked){
+            multiCancelForm.querySelectorAll( "#waiting_docs input").forEach((otherCheckbox) => {
+                if (otherCheckbox !== selectAllDocs){
+                    otherCheckbox.checked = true;
+                }
+            });
+        }else{
+            multiCancelForm.querySelectorAll( "#waiting_docs input").forEach((otherCheckbox) => {
+                if (otherCheckbox !== selectAllDocs){
+                    otherCheckbox.checked = false;
+                }
+            });
+        }
+        updateSubmitButtonState();
     })
     const authToken = document.querySelector('meta[name="csrf-token"]').content
     function createUnapproveBody(documentId){
@@ -766,13 +862,12 @@ function addMultiCancelForm(language, waitingDocs){
         bodyToken += '&document%5Bsend_to_email%5D=0&' + (sendEmail.checked? '&document%5Bsend_to_email%5D=1' : '')
         bodyToken += '&document%5Bsend_to_messenger%5D=0' + (sendMessenger.checked? '&document%5Bsend_to_messenger%5D=1' : '')
         bodyToken += '&commit=%D0%A1%D0%BE%D1%85%D1%80%D0%B0%D0%BD%D0%B8%D1%82%D1%8C'
-        console.log(bodyToken)
         return bodyToken;
     }
     multiCancelForm.querySelectorAll('#waiting_docs input[type="checkbox"]').forEach((checkbox)=>{
         checkbox.addEventListener('change',()=>{
+            selectAllDocs.checked = false
             updateSubmitButtonState()
-            console.log(checkbox.checked)
         })
     })
     document.getElementById('multicancel_form').addEventListener('submit', (e)=>{
@@ -828,9 +923,10 @@ function addMultiCancelForm(language, waitingDocs){
             autocompleteCancel(cancelDocComment, cancelDocs, cancelDocsEN)
             break;
     }
+
 }
 
-function displayDocs(askedTagSet, imgInfoSet) {
+function displayDocs(askedTagSet, imgInfoSet, verifyBlockSet) {
     function popup(url)
     {
         const width  = screen.width*0.2;
@@ -853,13 +949,12 @@ function displayDocs(askedTagSet, imgInfoSet) {
         return false;
     }
     //const docPanel = document.getElementById('document_panel')
-
+    //checkDocuments()
     const docPanel = document.evaluate("//h3[contains(., 'Документы')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext().parentElement
     const phone = document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0] ?
         document.getElementById('phones_sidebar_section').getElementsByTagName('li')[0].getElementsByTagName('div')[0].textContent :
         "bebra"
     const emailConfirmed = document.getElementById('player_info_sidebar_section').querySelector('.row-confirmed_at').textContent.toLowerCase()
-    console.log(emailConfirmed)
     const paymentOptions  = document.evaluate("//h3[contains(., 'Инструменты платежа')]", document, null, XPathResult.ANY_TYPE, null ).iterateNext().parentElement;
     const paymentOptionsCopy  = paymentOptions.cloneNode(true)
     let phoneVerified = document.createElement("span");
@@ -882,11 +977,11 @@ function displayDocs(askedTagSet, imgInfoSet) {
     let language = document.getElementsByClassName('row-yazyk')[0].getElementsByTagName('td')[0].textContent.toUpperCase()
 
     let waitingDocsApproveAll = createButton('Одобрить все ожидающие')
+    waitingDocsApproveAll.title = "ALT + Q"
     let waitingDocsApproveAllBottom
     let waitingDocs = document.querySelectorAll('#document_panel tr.document-pending:not(.document-removed)')
     let multiCancelButtonBottom
     let multiCancelButton = createButton('Множественная отмена')
-    console.log(waitingDocs)
 
 
     switch (language) {
@@ -967,7 +1062,10 @@ function displayDocs(askedTagSet, imgInfoSet) {
     const userTags = document.getElementById("user_tags").getAttribute("data-tags")?document.getElementById("user_tags").getAttribute("data-tags"):document.getElementById("user_tags").getAttribute("data-payload");
 
     let isProfileVerified = userTags.indexOf("verified") == -1 ? 0 : 1;
-
+    const verifyForm = document.getElementsByClassName('verify-user')[0]?document.getElementsByClassName('verify-user')[0].getElementsByTagName('form')[0]:null
+    let CISCountries = ['Украина', 'Россия', 'Казахстан']
+    let CISCurrency = ['RUB','UAH','KZT']
+    let currentCurrency = document.querySelector('.col-valyuta .yes').textContent
 
     if(year >= 2003 && !isProfileVerified){
         document.getElementById(
@@ -993,6 +1091,12 @@ function displayDocs(askedTagSet, imgInfoSet) {
         phoneVerified.textContent = 'тел. подтверждён'
         phoneVerified.setAttribute('class', 'player-tag player-tag-verified')
     }else{
+        if((CISCountries.some(country=> phone.includes(country))||CISCurrency.some(currency=> currentCurrency.includes(currency))) && verifyBlockSet && !isProfileVerified){
+            verifyForm.getElementsByTagName("button")[0].disabled = true
+            verifyForm.getElementsByTagName("button")[0].textContent = 'Номер не верифицирован'
+            verifyForm.getElementsByTagName("button")[0].style.backgroundImage = 'linear-gradient(180deg, #c64a49, #bc5551)'
+            verifyForm.getElementsByTagName("button")[0].style.borderWidth = '0'
+        }
         phoneVerified.textContent = 'тел. не подтверждён'
         phoneVerified.setAttribute('class', 'player-tag player-tag-Не_выводить')
     }
@@ -1068,24 +1172,25 @@ function displayDocs(askedTagSet, imgInfoSet) {
             container.appendChild(selfieTagRemove)
             containerBottom.appendChild(selfieTagRemoveBottom)
         }
-        const verifyForm = document.getElementsByClassName('verify-user')[0]?document.getElementsByClassName('verify-user')[0].getElementsByTagName('form')[0]:null
         if (verifyForm){
             verifyForm.getElementsByTagName("button")[0].title = 'ALT + A'
             verifyForm.addEventListener('submit', (event) => {
-                currentTags = tagPanel.getElementsByClassName('current-tags')[0]
-                if(currentTags.innerHTML.includes('asked for docs')){
-                    document.getElementById('docs-remove-tag').click()
-                }
-                if(currentTags.innerHTML.includes('asked for selfie')){
-                    document.getElementById('selfie-remove-tag').click()
-                }
+
             })
             document.addEventListener('keydown', function(event) {
                 if (event.altKey && event.code == 'KeyA') {
-                    verifyForm.submit()
+                    discardAskedTags();
+                    if (!verifyBlockSet || !((CISCountries.some(country=> phone.includes(country))||CISCurrency.some(currency=> currentCurrency.includes(currency))) && !isProfileVerified && !phone.includes('(Активный, Подтвержденный)'))){
+                        verifyForm.submit()
+                    }
                 }
             });
         }
+        document.addEventListener('keydown', function(event) {
+            if (event.altKey && event.code == 'KeyA') {
+                discardAskedTags();
+            }
+        });
     }
 
 
@@ -1136,6 +1241,36 @@ function displayDocs(askedTagSet, imgInfoSet) {
             });
         })
     }
+    document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.code == 'KeyQ') {
+            const authToken = document.querySelector('meta[name="csrf-token"]').content
+            const approveAllFetchRequests = []
+            waitingDocsButtons.forEach((button) => {
+                approveAllFetchRequests.push(fetch(button.href, {
+                    referrer: button.href.split('/change')[0],
+                    referrerPolicy: "strict-origin-when-cross-origin",
+                    body: "_method=post&authenticity_token=" + authToken,
+                    method: "POST",
+                    headers: {
+                        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "cache-control": "max-age=0",
+                        "content-type": "application/x-www-form-urlencoded",
+                        "priority": "u=0, i",
+                        "sec-fetch-dest": "document",
+                        "sec-fetch-mode": "navigate",
+                        "sec-fetch-site": "same-origin",
+                        "sec-fetch-user": "?1",
+                        "upgrade-insecure-requests": "1"
+                    },
+                    mode: "cors",
+                    credentials: "include"
+                }).then())
+                window.location.reload()
+            })
+        }
+    });
+
     containerH3.appendChild(containerBottom)
     docPanel.getElementsByTagName('h3')[0].appendChild(container)
     docPanel.appendChild(containerH3)
@@ -1190,6 +1325,7 @@ function cardCheck() {
     const colorАttentive = "#d55c54";
     const colorVerified = "#A6F2A6";
     const colorNotVerified = "#C6C6C6";
+    const todayDate = new Date()
     let maxLimits = {
         RUB: 30000,
         EUR: 300,
@@ -1205,6 +1341,7 @@ function cardCheck() {
         BRL: 2400,
         Undefined: 400000000000000000000
     };
+    // сделать разные лимиты для профиля выводящего сугубо по сбп(30к) и по остальным (50к)
     let playerHasReachedLimitDeposits = depositsOverall >= maxLimits[userCurrency];
     let playerHasReachedLimitCashouts = cashoutsOverall >= maxLimits[userCurrency];
     let playerHasReachedLimitCashoutsWithHold = cashoutsOverall + holdOverall >= maxLimits[userCurrency];
@@ -1229,13 +1366,12 @@ function cardCheck() {
     let commentsBlock = document.getElementById("active_admin_comments_for_user_" + userid);
     let unknownCards = [];
     for (var i = 1, row; row = table.rows[i]; i++) {
-
         let card = row.cells[3].textContent;
         let method = row.cells[2].textContent;
-        let methodCurrency = row.cells[6]?row.cells[6].textContent:'Undefined';
-        let deposits = parseInt(row.cells[7]?row.cells[7].textContent.slice(0, -2):0);
-        let cashouts = parseInt(row.cells[8]?row.cells[8].textContent.slice(0, -2):0);
-        let debt = parseInt(row.cells[9]?row.cells[9].textContent.slice(0, -2):0);
+        let methodCurrency = row.cells[7]?row.cells[7].textContent:'Undefined';
+        let deposits = parseInt(row.cells[8]?row.cells[8].textContent.slice(0, -2):0);
+        let cashouts = parseInt(row.cells[9]?row.cells[9].textContent.slice(0, -2):0);
+        let debt = parseInt(row.cells[10]?row.cells[10].textContent.slice(0, -2):0);
         let isVerified = 1
         if(row.cells[5]){
             isVerified = row.cells[5].textContent.indexOf("Да") == -1 ? 0 : 1;
@@ -1248,17 +1384,20 @@ function cardCheck() {
             row.style.backgroundColor = colorVerified;
         }
         if (debt != 0){
-            console.log(card)
+            let lastPayDate = new Date(row.cells[1].textContent)
             if (card.match(/\d{6}\*{6}\d{4}/g) && methodHasReachedLimitDeposits && !isVerified) {
-                row.cells[7].style.backgroundColor = colorАttentive;
-            }
-            if (card.match(/\d{6}\*{6}\d{4}/g) && methodHasReachedLimitCashouts && !isVerified) {
                 row.cells[8].style.backgroundColor = colorАttentive;
             }
+            if (card.match(/\d{6}\*{6}\d{4}/g) && methodHasReachedLimitCashouts && !isVerified) {
+                row.cells[9].style.backgroundColor = colorАttentive;
+            }
             if (card.match(/\d{6}\*{6}\d{4}/g) && methodHasReachedLimitCashoutsWithHold && !isVerified) {
-                let cashoutsRow = row.cells[8];
+                let cashoutsRow = row.cells[9];
                 cashoutsRow.style.backgroundColor = colorАttentive;
                 cashoutsRow.innerHTML += " + HOLD"
+            }
+            if(card.match(/\d{6}\*{6}\d{4}/g) && (todayDate.getFullYear()-lastPayDate.getFullYear() > 1 || (todayDate.getFullYear()-lastPayDate.getFullYear() == 1 && todayDate.getMonth()-lastPayDate.getMonth()>-6) || todayDate.getFullYear()-lastPayDate.getFullYear() == 1 && todayDate.getMonth()-lastPayDate.getMonth()==-6 && todayDate.getDay()-lastPayDate.getDay() > 0 || (todayDate.getMonth()-lastPayDate.getMonth()>=6 ?? todayDate.getDay()-lastPayDate.getDay() > 0)) && !isVerified){
+                row.cells[5].innerHTML += `<span class="status_tag warn">сбросить</span>`
             }
         }
         //card.match(/\d{6}\*{6}\d{4}/g)
@@ -1333,8 +1472,3 @@ function betsDublicate() {
     document.getElementById("page_title").innerHTML += `<br><b style="font-size: 1rem">` +bets + sportBets + `</b>`
 
 }
-
-let tagsList = document.querySelectorAll('#user_tags > div.current-tags > span')
-tagsList.forEach((tag) => {
-    console.log(encodeURI(tag.textContent))
-})

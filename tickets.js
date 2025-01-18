@@ -4,6 +4,12 @@ document.addEventListener('readystatechange', () => {
             function filter(input) {
                 return input.replace(/[^\d.]/g, '');
             }
+            let externalPaySys
+            let externalPaySysDep
+            chrome.storage.local.get(['exPaySysCashOut', 'exPaySysDep'], function(result) {
+                externalPaySys = result.exPaySysCashOut.split(',');
+                externalPaySysDep = result.exPaySysDep.split(',');
+            })
             if(result.checkboxStates.ticketSet){
                 let paymentAction = document.getElementsByClassName('row-action')[0].getElementsByTagName('td')[0].textContent
                 let userEmailRow = document.getElementsByClassName('row-user')[0].getElementsByTagName('div')[0]
@@ -13,8 +19,6 @@ document.addEventListener('readystatechange', () => {
                 let paymentKey = document.getElementsByClassName('row-source_id')[0].getElementsByTagName('td')[0].textContent
                 let paymentSystem = document.getElementsByClassName('row-payment_system')[0].getElementsByTagName('td')[0].textContent
                 let amount = parseInt(filter(document.getElementsByClassName('row-amount')[0].getElementsByTagName('td')[0].textContent))
-                const externalPaySys = ["Black Rabbit", "Platcore", "Expay", "Cypix", "Accentpay", "Sgate", "TranZex", "Gogetaway", "TranzexPay", "Paygames"];
-                const externalPaySysDep = ["Cypix payout EUR Mastercard/Visa - Bank Card", "Betatransfer SBP Out - Sbp ", "Expay Out RUB - Bank Card", "Forta out cash - Bank Card", "Accent new out - Bank Card", 'Black Rabbit']
                 let ticketClip = ""
 
                 if (paymentAction == "Депозит" || paymentAction == "Deposit"){
@@ -23,13 +27,14 @@ document.addEventListener('readystatechange', () => {
                     }else {
                         ticketClip = paymentKey + " "
                     }
-
                     ticketClip += projectName + " " + paymentID
                     if(paymentSystem.includes("Forta")){
                         ticketClip = "@ArbitrageC2CBot\n" + externalKey + "\n" + amount
 
                     }else if(paymentSystem.includes("Star2Pay")){
                         ticketClip = "Проверьте сделку\n id: " + externalKey + "\n @Star2HelperBot"
+                    }else if(paymentSystem.includes("Aifory")){
+                        ticketClip = paymentKey + "\n" + projectName + " " + paymentID
                     }
                 }else if (paymentAction == "Выплата" || paymentAction == "Cashout"){
                     if(externalPaySysDep.some(payments=> paymentSystem.includes(payments))){

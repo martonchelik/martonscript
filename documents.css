@@ -20,6 +20,14 @@
     width: 600px;
     padding: 0px !important;
     margin: 3px 15px 15px 15px;;
+
+}
+
+#multicancel_sidebar_section:not(textarea){
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
 }
 
 #multicancel_sidebar_section .container {
@@ -75,6 +83,7 @@
     justify-content: center;
     flex-direction: column;
     padding-bottom: 10px;
+    max-width: 152px;
 }
 
 #waiting_docs > div> td > img{
@@ -84,6 +93,7 @@
 
 #waiting_docs > div> td > a{
     width: 100% !important;
+    overflow-wrap: break-word;
 }
 #waiting_docs > div> td{
     height: 132px !important;

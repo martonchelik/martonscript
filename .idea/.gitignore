@@ -3,5 +3,10 @@
 /workspace.xml
 /notApproveForm.html
 /post_req
+/super_merge.js
+/clipboard_old.js
+/clipboard.js
+/changelog
+/activeadmin.css
 # Editor-based HTTP Client requests
 /httpRequests/

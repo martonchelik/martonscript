@@ -57,7 +57,7 @@ chrome.storage.local.get('checkboxStates', function (result) {
 let authToken = document.querySelector('meta[name="csrf-token"]').content
 
 function addSecondComment(){
-    let paymentId = window.location.href.replace(/\D/g, "");
+    let paymentId = window.location.href.split('payments')[1].replace(/\D/g, "");
     fetch(window.location.href.split('payments/')[0] + "/comments", {
         "headers": {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -80,9 +80,9 @@ function addSecondComment(){
     }).then();
 }
 
+let userUrl = window.location.href.indexOf("players") == -1?document.getElementsByClassName('row-user')[0].getElementsByTagName('div')[0].getElementsByTagName('a')[0].href:null
 
-async function addTagDontCashout(){
-    let userUrl = window.location.href.indexOf("players") == -1?document.getElementsByClassName('row-user')[0].getElementsByTagName('div')[0].getElementsByTagName('a')[0].href:null
+async function getPlayerPage(){
     let player_page = await fetch(userUrl, {
         referrerPolicy: "strict-origin-when-cross-origin",
         body: null,
@@ -106,52 +106,58 @@ async function addTagDontCashout(){
     if (player_page.ok) {
         let playerText = await player_page.text();
         const doc = parser.parseFromString(playerText, "text/html")
-        let currentTags = doc.getElementById("user_tags").getAttribute("data-payload")
-        console.log(currentTags)
-        let body = ''
-        if(!currentTags.includes('Не выводить')){
-            let tagsList = JSON.parse(currentTags);
-            console.log(tagsList)
-            tagsList.forEach((tag)=>{
-                if (body){
-                    body += '&payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
-                }else{
-                    body += 'payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
-                }
-            })
-            if (body){
-                body += '&payload%5B%5D=' + encodeURI("Не+выводить")
-            }else{
-                body += 'payload%5B%5D=' + encodeURI("Не+выводить")
-            }
-            console.log(body)
-            fetch(userUrl+"/update_tags", {
-                referrer: userUrl+"/update_tags",
-                referrerPolicy: "strict-origin-when-cross-origin",
-                body: body,
-                method: "PATCH",
-                headers: {
-                    "accept": "application/json, text/javascript, */*; q=0.01",
-                    "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "priority": "u=1, i",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin",
-                    "x-csrf-token": authToken,
-                    "x-requested-with": "XMLHttpRequest"
-                },
-                mode: "cors",
-                credentials: "include"
-            }).then()
-        }
-    } else {
-        alert("Ошибка HTTP: " + player_page.status);
+        return doc
+    }else {
+        return null
     }
-
-
 }
 
+function addTagDontCashout(){
+    getPlayerPage().then(result =>{
+        let doc = result
+        if (doc){
+            let currentTags = doc.getElementById("user_tags").getAttribute("data-payload")
+            console.log(currentTags)
+            let body = ''
+            if(!currentTags.includes('Не выводить')){
+                let tagsList = JSON.parse(currentTags);
+                console.log(tagsList)
+                tagsList.forEach((tag)=>{
+                    if (body){
+                        body += '&payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
+                    }else{
+                        body += 'payload%5B%5D=' + encodeURI(tag.replace(' ', '+'))
+                    }
+                })
+                if (body){
+                    body += '&payload%5B%5D=' + encodeURI("Не+выводить")
+                }else{
+                    body += 'payload%5B%5D=' + encodeURI("Не+выводить")
+                }
+                console.log(body)
+                fetch(userUrl+"/update_tags", {
+                    referrer: userUrl+"/update_tags",
+                    referrerPolicy: "strict-origin-when-cross-origin",
+                    body: body,
+                    method: "PATCH",
+                    headers: {
+                        "accept": "application/json, text/javascript, */*; q=0.01",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        "priority": "u=1, i",
+                        "sec-fetch-dest": "empty",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": authToken,
+                        "x-requested-with": "XMLHttpRequest"
+                    },
+                    mode: "cors",
+                    credentials: "include"
+                }).then()
+            }
+        }
+    });
+}
 
 function autocompleteCancel(inp, displayArr, inputArr) {
     if (inp) {
@@ -285,7 +291,7 @@ function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
         }
 
         function onInput(e) {
-            let val = this.value;
+            let val = this.value.split(/[+]+/).pop();
             closeAllLists();
             currentFocus = -1;
             let a = createListContainer();
@@ -344,6 +350,14 @@ function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
             inp.parentNode.appendChild(a);
             return a;
         }
+        function replaceAfterLastPlus(inputString, replacement) {
+            const lastPlusIndex = inputString.lastIndexOf('+');
+            if (lastPlusIndex === -1) {
+                return replacement;
+            }
+            return inputString.slice(0, lastPlusIndex + 1) + ' ' + replacement.charAt(0).toLowerCase() + replacement.slice(1);
+        }
+
 
         function createListItem(item, val, index, inputValue, i) {
             let b = document.createElement("DIV");
@@ -366,28 +380,7 @@ function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
 
             b.innerHTML += "<input type='hidden' value='" + inputValue + "'>";
             b.addEventListener("click", function (e) {
-                function popupCheck(url)
-                {
-                    const width  = screen.width*0.2;
-                    const height = screen.height*0.5;
-                    const left   = screen.width - width - 50;
-                    const top    = screen.height*0.15;
-                    let params = 'width='+width+', height='+height;
-                    params += ', top='+top+', left='+left;
-                    params += ', directories=no';
-                    params += ', location=no';
-                    params += ', menubar=no';
-                    params += ', resizable=no';
-                    params += ', scrollbars=yes';
-                    params += ', status=yes';
-                    params += ', toolbar=no';
-                    let newWin=window.open(url,'addCheckTagPopup', params);
-                    if (window.focus) {
-                        newWin.focus()
-                    }
-                    return false;
-                }
-                inp.value = this.getElementsByTagName("input")[0].value;
+                inp.value = replaceAfterLastPlus(inp.value, this.getElementsByTagName("input")[0].value);
                 if (autoCheckTagSet){
                     switch (inp.value) {
                         case "В чеке инстант":
@@ -404,7 +397,11 @@ function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
                             }
                             break;
                         default:
-                            console.log('Сегодня без тега, но впредь будьте осторожны')
+                            if (inp.value.includes("В чеке купон") && inp.value !== "В чеке купон"){
+                                if (confirm('Поставить тег "Не выводить"?\n (Если он уже установлен, он не исчезнет)')) {
+                                    addTagDontCashout();
+                                }
+                            }else console.log('Сегодня без тега, но впредь будьте осторожны')
                     }
                 }
                 if (inp.value === "В чеке спорт"){
@@ -462,6 +459,12 @@ function autocomplete(inp, displayArr, inputArr, verifiedAndUsed) {
                     navigator.clipboard.writeText(checkMessage).then(() =>{console.log(checkMessage)});
                     inp.value = 'В чеке'
                 }
+                if (inp.value.includes("В чеке купон") && inp.value !== "В чеке купон"){
+                    let checkMessage = userUrl + ' отыгран '+ inp.value.split("В чеке купон ")[1] +', проверьте, пожалуйста'
+                    navigator.clipboard.writeText(checkMessage).then(() =>{console.log(checkMessage)});
+                    inp.value = 'В чеке'
+                }
+
 
                 closeAllLists();
             });
@@ -547,31 +550,12 @@ function waitForClass(selector, callback) {
         subtree: true
     });
 
-    // Initial check in case elements are already present
     const initialElements = document.querySelectorAll(selector);
     if (initialElements.length > 0) {
         observer.disconnect();
         callback(initialElements);
     }
 }
-
-/*function setupClickCancel(){
-    waitForClass('a.unapprove-document', (buttons) => {
-        waitForElement('unapprove_document_sidebar_section', (element) => {
-            buttons.forEach((button) => {
-
-                button.addEventListener('click', () => {
-                    const docId = button.getAttribute("href").split("id=")[1];
-                    const stringId = "input[value=\"" +docId + "\"]"
-                    waitForClass(stringId, () =>{
-                        document.querySelectorAll(stringId)[0].parentElement.parentElement.parentElement.parentElement.querySelector('#document_comment').focus()
-                    })
-
-                })
-            });
-        });
-    })
-}*/
 
 let commentForImageButton
 let approveImageDoc
@@ -580,7 +564,6 @@ let activeImageSrc = null
 let uiId = 16;
 
 function setupAutocomplete(documentCommentTemplatesSet) {
-/*    setupClickCancel();*/
 
     let phone = 'notset'
 
@@ -598,6 +581,27 @@ function setupAutocomplete(documentCommentTemplatesSet) {
         , "Проверен", "Не отыгран депозит", "На согласовании","Провести позже, как заработает", "Позже или на карту", "Позже", "Позже или на карту / другую ПС"
         , "Позже или на другую ПС", "В чеке спорт", "В чеке инстант", "В чеке купон", "В чеке рулетка 2-3", "В чеке рулетка вб", "В чеке рулетка 2-3 вб", "В чеке блэкджек", "В чеке красная бонусная",
         "В чеке крупный выигрыш", "В чеке отмыв денег тег (money_laundry мани лондри) ", "В чеке спорт саспект (sport_suspect)"];
+    if (document.getElementById('cashout_reject_reasons') && document.getElementById('cashout_reject_reasons').innerText.includes('Игрок отыграл бонус')){
+        getPlayerPage().then(result =>{
+            let doc = result
+            console.log(doc)
+            let playedBonuses = []
+            if (doc){
+                let bonusesTableRows = doc.getElementsByClassName('col-bonus')[1].parentElement.parentElement.querySelectorAll('tr')
+                console.log(bonusesTableRows)
+                bonusesTableRows.forEach((row)=>{
+                    if (row.cells[4].textContent == 'Отыгрыш завершен'){
+                        playedBonuses.push(row.cells[0].textContent)
+                    }
+                })
+                if (playedBonuses.length !== 0) {
+                    playedBonuses.forEach((bonus) => {
+                        comments.push("В чеке купон " + bonus)
+                    })
+                }
+            }
+        });
+    }
     const commentsForProfiles = ["Аккаунт заблокирован по п.п. 4.4", "Аккаунт заблокирован, т.к. игроку нет 18-ти лет", "Перед верификацией запросить местоположение",
         "Аккаунт заблокирован по п.п. 4.4 до возвращения в разрешённый регион", "Дубликат заблокирован. Основной - ", "Дубликат почта заблокирован",
         "Данные в профиле изменены в соответствии с данными в документе.", "Данные скорректированы.", "Аккаунт заблокирован по причине: лудоман", "Номер телефона номер подтвержден селфи."];
@@ -1018,12 +1022,12 @@ function setupAutocomplete(documentCommentTemplatesSet) {
         ""
     ]
 
-    const cancels = ["На карту", "На МК", "На пиастрикс", "На мифинити", "Переоформить корректно", "На верифицированную карту", "На верифицированную карту или на другую иконку", "Обратная сторона id", "На карту или банковским переводом",
+    const cancels = ["На карту", "На МК", "На пиастрикс", "На мифинити", "На GGbank", "Переоформить корректно", "На верифицированную карту", "На верифицированную карту или на другую иконку", "Обратная сторона id", "На карту или банковским переводом",
         "Документ с CPF", "На мифинити", "Дубликат", "По номеру телефона из профиля, почте или CPF", "На другую иконку", "Завершить бонусную ставку в игре ", "Завершить бонусные ставки в играх ",
         "На номер из профиля или скрин из ЛК", "Пластик", "Выписка по карте", "На карту или на другую иконку", "Верифицировать номер в профиле", "Верифицировать ", "документы владельца, потом запрет", "На крипту", "На скрилл",
         "Верифицировать скрилл", "На бинанс", "Селфи для подтверждения нового номера телефона"];
 
-
+//player-tag-verified
     let lastPayments = null
     let allLastPaymentOptions = []
     let setOfLastPaymentOptions  = null
@@ -1368,4 +1372,3 @@ function editComments() {
         const obsImg = observeDivContentChange(observableImage[0], approveButton, notApproveButton, commentButton)
     })
 }
-
